@@ -4,37 +4,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kelimeli Mahjong - Zamanlı, Puanlı, İsim & Kelime Yöneticili</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; padding:24px; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; padding:12px; }
     h1 { margin:0 0 12px; }
-    .layout { max-width: 1200px; margin: 0 auto; display:grid; grid-template-columns: 320px 1fr; gap:16px; }
-    @media (max-width: 900px){ .layout{ grid-template-columns: 1fr; } }.panel { background:#020617; border:1px solid #1f2933; border-radius:16px; padding:12px; }
+    .layout { max-width: 1200px; margin: 0 auto; display:grid; grid-template-columns: 320px 1fr; gap:12px; }
+    @media (max-width: 900px){ .layout{ grid-template-columns: 1fr; } }.panel { background:#020617; border:1px solid #1f2933; border-radius:16px; padding:10px; }
 .panel h3{ margin:4px 0 8px; }
-.best-table{ width:100%; border-collapse:separate; border-spacing:0 8px; font-size:13px; }
+.best-table{ width:100%; border-collapse:separate; border-spacing:0 6px; font-size:12px; }
 .best-table th{ text-align:left; color:#94a3b8; font-weight:600; padding:0 6px 4px; }
 .best-row{ background:#0b1220; border:1px solid #1f2933; border-radius:12px; }
-.best-row td{ padding:8px 10px; }
+.best-row td{ padding:6px 8px; }
 .best-row.first{ outline:2px solid #22c55e; box-shadow:0 0 0 2px rgba(34,197,94,.2) inset; }
 
-.toolbar { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
-select, button, input { background:#111827; color:#e5e7eb; border:1px solid #334155; border-radius:10px; padding:10px 14px; }
+.toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+select, button, input { background:#111827; color:#e5e7eb; border:1px solid #334155; border-radius:10px; padding:10px 12px; font-size:14px; }
 button { cursor:pointer; }
 button.primary { background:#2563eb; border-color:#2563eb; }
 button.warn { background:#7c2d12; border-color:#7c2d12; }
 button.ghost { background:#020617; }
 button:disabled { opacity:0.6; cursor:not-allowed; }
-.stats { margin-left:auto; display:flex; gap:16px; flex-wrap:wrap; }
-.board { display:grid; gap:10px; }
-.tile { background:#020617; border:1px solid #1f2933; border-radius:14px; padding:18px; min-height:78px; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:700; font-size:22px; user-select:none; transition: transform .1s ease, background .2s ease, border .2s ease; }
+.stats { display:flex; gap:12px; flex-wrap:wrap; }
+
+/* Mobilde üstte sabit kontrol barı */
+.topbar{ position:sticky; top:0; z-index:20; background:#020617; border:1px solid #1f2933; border-radius:16px; padding:8px; margin-bottom:10px; }
+
+.board { display:grid; gap:8px; }
+.tile { background:#020617; border:1px solid #1f2933; border-radius:14px; padding:12px; min-height:64px; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:700; font-size:18px; user-select:none; transition: transform .1s ease, background .2s ease, border .2s ease; }
 .tile:hover { transform: translateY(-1px); }
 .tile.hidden { background:#020617; color:transparent; }
 .tile.revealed { background:#0b1220; border-color:#3b82f6; }
 .tile.matched { background:#052e16; border-color:#22c55e; color:#86efac; }
-.footer { margin-top:16px; color:#94a3b8; }
+.footer { margin-top:12px; color:#94a3b8; }
 .success { color:#22c55e; }
 .danger { color:#f87171; }
-.grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+.grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
 
-.namebar{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+.namebar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
 .badge{ background:#0b1220; border:1px solid #1f2933; border-radius:999px; padding:6px 10px; font-size:12px; }
 
 /* Modal */
@@ -46,9 +50,15 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
 .modal .actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:12px; }
 
 /* Kelime listesi */
-.word-list{ max-height:260px; overflow:auto; border:1px solid #1f2933; border-radius:12px; padding:8px; }
+.word-list{ max-height:220px; overflow:auto; border:1px solid #1f2933; border-radius:12px; padding:8px; }
 .word-item{ display:flex; gap:8px; align-items:center; justify-content:space-between; background:#0b1220; border:1px solid #1f2933; border-radius:10px; padding:6px 8px; margin-bottom:6px; font-size:13px; }
 .word-item small{ color:#94a3b8; }
+
+@media (max-width: 600px){
+  h1{ font-size:20px; }
+  .tile{ font-size:16px; min-height:56px; }
+  .grid{ grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+}
 
   </style>
 </head>
@@ -68,6 +78,7 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
       </table>
     </aside><!-- Sağ: Oyun -->
 <main class="app">
+  <div class="topbar">
   <h1>🀄 Kelimeli Mahjong — Zamanlı & Puanlı</h1>
   <div class="namebar">
     <span class="badge">Oyuncu:</span>
@@ -110,6 +121,8 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
       <div>👣 <strong id="moves">0</strong></div>
     </div>
   </div>
+
+        </div>
 
   <div id="board" class="board grid"></div>
   <div class="footer" id="status"></div>
