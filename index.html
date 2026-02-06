@@ -1,43 +1,55 @@
-<!DOCTYPE html>
-<html lang="tr">
+<!DOCTYPE html><html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kelimeli Mahjong - Zamanlı, Puanlı, İsimli Skor Tablosu</title>
+  <title>Kelimeli Mahjong - Zamanlı, Puanlı, İsim & Kelime Yöneticili</title>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; padding:24px; }
     h1 { margin:0 0 12px; }
     .layout { max-width: 1200px; margin: 0 auto; display:grid; grid-template-columns: 320px 1fr; gap:16px; }
-    @media (max-width: 900px){ .layout{ grid-template-columns: 1fr; } }
+    @media (max-width: 900px){ .layout{ grid-template-columns: 1fr; } }.panel { background:#020617; border:1px solid #1f2933; border-radius:16px; padding:12px; }
+.panel h3{ margin:4px 0 8px; }
+.best-table{ width:100%; border-collapse:separate; border-spacing:0 8px; font-size:13px; }
+.best-table th{ text-align:left; color:#94a3b8; font-weight:600; padding:0 6px 4px; }
+.best-row{ background:#0b1220; border:1px solid #1f2933; border-radius:12px; }
+.best-row td{ padding:8px 10px; }
+.best-row.first{ outline:2px solid #22c55e; box-shadow:0 0 0 2px rgba(34,197,94,.2) inset; }
 
-    .panel { background:#020617; border:1px solid #1f2933; border-radius:16px; padding:12px; }
-    .panel h3{ margin:4px 0 8px; }
-    .best-table{ width:100%; border-collapse:separate; border-spacing:0 8px; font-size:13px; }
-    .best-table th{ text-align:left; color:#94a3b8; font-weight:600; padding:0 6px 4px; }
-    .best-row{ background:#0b1220; border:1px solid #1f2933; border-radius:12px; }
-    .best-row td{ padding:8px 10px; }
-    .best-row.first{ outline:2px solid #22c55e; box-shadow:0 0 0 2px rgba(34,197,94,.2) inset; }
+.toolbar { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+select, button, input { background:#111827; color:#e5e7eb; border:1px solid #334155; border-radius:10px; padding:10px 14px; }
+button { cursor:pointer; }
+button.primary { background:#2563eb; border-color:#2563eb; }
+button.warn { background:#7c2d12; border-color:#7c2d12; }
+button.ghost { background:#020617; }
+button:disabled { opacity:0.6; cursor:not-allowed; }
+.stats { margin-left:auto; display:flex; gap:16px; flex-wrap:wrap; }
+.board { display:grid; gap:10px; }
+.tile { background:#020617; border:1px solid #1f2933; border-radius:14px; padding:18px; min-height:78px; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:700; font-size:22px; user-select:none; transition: transform .1s ease, background .2s ease, border .2s ease; }
+.tile:hover { transform: translateY(-1px); }
+.tile.hidden { background:#020617; color:transparent; }
+.tile.revealed { background:#0b1220; border-color:#3b82f6; }
+.tile.matched { background:#052e16; border-color:#22c55e; color:#86efac; }
+.footer { margin-top:16px; color:#94a3b8; }
+.success { color:#22c55e; }
+.danger { color:#f87171; }
+.grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
 
-    .toolbar { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
-    select, button, input { background:#111827; color:#e5e7eb; border:1px solid #334155; border-radius:10px; padding:10px 14px; }
-    button { cursor:pointer; }
-    button.primary { background:#2563eb; border-color:#2563eb; }
-    button.warn { background:#7c2d12; border-color:#7c2d12; }
-    button:disabled { opacity:0.6; cursor:not-allowed; }
-    .stats { margin-left:auto; display:flex; gap:16px; flex-wrap:wrap; }
-    .board { display:grid; gap:10px; }
-    .tile { background:#020617; border:1px solid #1f2933; border-radius:14px; padding:18px; min-height:78px; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:700; font-size:22px; user-select:none; transition: transform .1s ease, background .2s ease, border .2s ease; }
-    .tile:hover { transform: translateY(-1px); }
-    .tile.hidden { background:#020617; color:transparent; }
-    .tile.revealed { background:#0b1220; border-color:#3b82f6; }
-    .tile.matched { background:#052e16; border-color:#22c55e; color:#86efac; }
-    .footer { margin-top:16px; color:#94a3b8; }
-    .success { color:#22c55e; }
-    .danger { color:#f87171; }
-    .grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+.namebar{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+.badge{ background:#0b1220; border:1px solid #1f2933; border-radius:999px; padding:6px 10px; font-size:12px; }
 
-    .namebar{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
-    .badge{ background:#0b1220; border:1px solid #1f2933; border-radius:999px; padding:6px 10px; font-size:12px; }
+/* Modal */
+.modal-backdrop{ position:fixed; inset:0; background:rgba(2,6,23,.7); display:none; align-items:center; justify-content:center; z-index:50; }
+.modal{ background:#020617; border:1px solid #1f2933; border-radius:16px; padding:16px; width:min(520px, 92vw); }
+.modal h3{ margin:0 0 8px; }
+.modal .row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+.modal .row > *{ flex:1; }
+.modal .actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:12px; }
+
+/* Kelime listesi */
+.word-list{ max-height:260px; overflow:auto; border:1px solid #1f2933; border-radius:12px; padding:8px; }
+.word-item{ display:flex; gap:8px; align-items:center; justify-content:space-between; background:#0b1220; border:1px solid #1f2933; border-radius:10px; padding:6px 8px; margin-bottom:6px; font-size:13px; }
+.word-item small{ color:#94a3b8; }
+
   </style>
 </head>
 <body>
@@ -54,69 +66,102 @@
         </thead>
         <tbody id="bestBody"></tbody>
       </table>
-      <button id="clearBest" class="warn" style="margin-top:8px; width:100%">Skorları Temizle</button>
-    </aside>
+    </aside><!-- Sağ: Oyun -->
+<main class="app">
+  <h1>🀄 Kelimeli Mahjong — Zamanlı & Puanlı</h1>
+  <div class="namebar">
+    <span class="badge">Oyuncu:</span>
+    <strong id="playerNameLabel">—</strong>
+    <button id="changeNameBtn" class="ghost">İsmi Değiştir</button>
+    <button id="manageWordsBtn" class="ghost">Kelimeleri Yönet</button>
+  </div>
+  <p>Seviyeler: <b>16</b> / <b>32</b> / <b>64</b> çift. Her oyun kelimeler <b>havuzdan rastgele</b> seçilir. Doğru = +100, Yanlış = -25.</p>
 
-    <!-- Sağ: Oyun -->
-    <main class="app">
-      <h1>🀄 Kelimeli Mahjong — Zamanlı & Puanlı</h1>
-      <div class="namebar">
-        <span class="badge">Oyuncu:</span>
-        <strong id="playerNameLabel">—</strong>
-        <button id="changeNameBtn">İsmi Değiştir</button>
-      </div>
-      <p>En basit: <b>16 çift</b>, Orta: <b>32 çift</b>, İleri: <b>64 çift</b>. Doğru = +100, Yanlış = -25.</p>
-
-      <div class="toolbar">
-        <label>
-          Dil:
-          <select id="langSelect">
-            <option value="en">İngilizce</option>
-            <option value="kr">Korece</option>
-          </select>
-        </label>
-        <label>
-          Seviye:
-          <select id="levelSelect">
-            <option value="0">En Basit (16 Çift)</option>
-            <option value="1">Orta (32 Çift)</option>
-            <option value="2">İleri (64 Çift)</option>
-          </select>
-        </label>
-        <label>
-          Süre:
-          <select id="timeSelect">
-            <option value="120">120 sn</option>
-            <option value="180">180 sn</option>
-            <option value="300">300 sn</option>
-          </select>
-        </label>
-        <button class="primary" id="startBtn">Başlat</button>
-        <button class="warn" id="resetBtn">Yeniden Başlat</button>
-        <div class="stats">
-          <div>⏱️ <strong id="timeLeft">0</strong>s</div>
-          <div>⭐ <strong id="score">0</strong></div>
-          <div>🎯 <strong id="matches">0</strong></div>
-          <div>👣 <strong id="moves">0</strong></div>
-        </div>
-      </div>
-
-      <div id="board" class="board grid"></div>
-      <div class="footer" id="status"></div>
-    </main>
+  <div class="toolbar">
+    <label>
+      Dil:
+      <select id="langSelect">
+        <option value="en">İngilizce</option>
+        <option value="kr">Korece</option>
+      </select>
+    </label>
+    <label>
+      Seviye:
+      <select id="levelSelect">
+        <option value="0">16 Çift</option>
+        <option value="1">32 Çift</option>
+        <option value="2">64 Çift</option>
+      </select>
+    </label>
+    <label>
+      Süre:
+      <select id="timeSelect">
+        <option value="120">120 sn</option>
+        <option value="180">180 sn</option>
+        <option value="300">300 sn</option>
+      </select>
+    </label>
+    <button class="primary" id="startBtn">Başlat</button>
+    <button class="warn" id="resetBtn">Yeniden Başlat</button>
+    <div class="stats">
+      <div>⏱️ <strong id="timeLeft">0</strong>s</div>
+      <div>⭐ <strong id="score">0</strong></div>
+      <div>🎯 <strong id="matches">0</strong></div>
+      <div>👣 <strong id="moves">0</strong></div>
+    </div>
   </div>
 
-  <script>
-    // ===== Kelime Havuzları =====
-    const pool = {
-      en: [
-        ['apple','elma'], ['book','kitap'], ['water','su'], ['sun','güneş'], ['dog','köpek'], ['house','ev'], ['travel','seyahat'], ['friend','arkadaş'], ['music','müzik'], ['money','para'], ['city','şehir'], ['food','yemek'], ['work','iş'], ['school','okul'], ['decision','karar'], ['improve','geliştirmek'], ['environment','çevre'], ['knowledge','bilgi'], ['opportunity','fırsat'], ['challenge','zorluk'], ['culture','kültür'], ['language','dil'], ['future','gelecek'], ['success','başarı'], ['time','zaman'], ['day','gün'], ['night','gece'], ['family','aile'], ['love','sevgi'], ['game','oyun'], ['learn','öğrenmek'], ['write','yazmak'], ['read','okumak']
-      ],
-      kr: [
-        ['사과','elma'], ['책','kitap'], ['물','su'], ['해','güneş'], ['개','köpek'], ['집','ev'], ['여행','seyahat'], ['친구','arkadaş'], ['음악','müzik'], ['돈','para'], ['도시','şehir'], ['음식','yemek'], ['일','iş'], ['학교','okul'], ['결정','karar'], ['개선하다','geliştirmek'], ['환경','çevre'], ['지식','bilgi'], ['기회','fırsat'], ['도전','zorluk'], ['문화','kültür'], ['언어','dil'], ['미래','gelecek'], ['성공','başarı'], ['시간','zaman'], ['낮','gün'], ['밤','gece'], ['가족','aile'], ['사랑','sevgi'], ['게임','oyun'], ['배우다','öğrenmek'], ['쓰다','yazmak'], ['읽다','okumak']
-      ]
+  <div id="board" class="board grid"></div>
+  <div class="footer" id="status"></div>
+</main>
+
+  </div>  <!-- İsim Modal -->  <div id="nameModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Oyuncu Adı</h3>
+      <p style="color:#94a3b8; font-size:13px;">Skor tablosunda görünecek ismini yaz.</p>
+      <div class="row">
+        <input id="nameInput" placeholder="İsmin..." />
+      </div>
+      <div class="actions">
+        <button id="nameCancel" class="ghost">Vazgeç</button>
+        <button id="nameSave" class="primary">Kaydet</button>
+      </div>
+    </div>
+  </div>  <!-- Kelime Yönetimi Modal -->  <div id="wordsModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Kelime Havuzu</h3>
+      <p style="color:#94a3b8; font-size:13px;">Kendi kelimelerini ekle/sil. Oyun bu havuzdan rastgele seçecek.</p>
+      <div class="row">
+        <select id="wordLangSelect">
+          <option value="en">İngilizce</option>
+          <option value="kr">Korece</option>
+        </select>
+      </div>
+      <div class="row">
+        <input id="wordA" placeholder="Yabancı kelime (örn: apple / 사과)" />
+        <input id="wordB" placeholder="Türkçe karşılığı (örn: elma)" />
+      </div>
+      <div class="row">
+        <button id="addWordBtn" class="primary">Ekle</button>
+        <button id="clearCustomBtn" class="warn">Özel Kelimeleri Temizle</button>
+      </div>
+      <div class="word-list" id="wordList"></div>
+      <div class="actions">
+        <button id="wordsClose" class="ghost">Kapat</button>
+      </div>
+    </div>
+  </div>  <script>
+    // ===== Varsayılan Kelime Havuzları =====
+    const defaultPool = {
+      en: [ ['apple','elma'], ['book','kitap'], ['water','su'], ['sun','güneş'], ['dog','köpek'], ['house','ev'], ['travel','seyahat'], ['friend','arkadaş'], ['music','müzik'], ['money','para'], ['city','şehir'], ['food','yemek'], ['work','iş'], ['school','okul'], ['decision','karar'], ['improve','geliştirmek'], ['environment','çevre'], ['knowledge','bilgi'], ['opportunity','fırsat'], ['challenge','zorluk'], ['culture','kültür'], ['language','dil'], ['future','gelecek'], ['success','başarı'], ['time','zaman'], ['day','gün'], ['night','gece'], ['family','aile'], ['love','sevgi'], ['game','oyun'], ['learn','öğrenmek'], ['write','yazmak'], ['read','okumak'] ],
+      kr: [ ['사과','elma'], ['책','kitap'], ['물','su'], ['해','güneş'], ['개','köpek'], ['집','ev'], ['여행','seyahat'], ['친구','arkadaş'], ['음악','müzik'], ['돈','para'], ['도시','şehir'], ['음식','yemek'], ['일','iş'], ['학교','okul'], ['결정','karar'], ['개선하다','geliştirmek'], ['환경','çevre'], ['지식','bilgi'], ['기회','fırsat'], ['도전','zorluk'], ['문화','kültür'], ['언어','dil'], ['미래','gelecek'], ['성공','başarı'], ['시간','zaman'], ['낮','gün'], ['밤','gece'], ['가족','aile'], ['사랑','sevgi'], ['게임','oyun'], ['배우다','öğrenmek'], ['쓰다','yazmak'], ['읽다','okumak'] ]
     };
     const levelPairs = [16, 32, 64];
+
+    // ===== LocalStorage Keys =====
+    const NAME_KEY = 'mahjong_player_name_v2';
+    const BEST_KEY = 'mahjong_best_v3';
+    const CUSTOM_KEY = 'mahjong_custom_words_v1';
 
     // ===== DOM =====
     const langSelect = document.getElementById('langSelect');
@@ -131,9 +176,24 @@
     const timeLeftEl = document.getElementById('timeLeft');
     const statusEl = document.getElementById('status');
     const bestBody = document.getElementById('bestBody');
-    const clearBestBtn = document.getElementById('clearBest');
     const playerNameLabel = document.getElementById('playerNameLabel');
     const changeNameBtn = document.getElementById('changeNameBtn');
+    const manageWordsBtn = document.getElementById('manageWordsBtn');
+
+    // Modals
+    const nameModal = document.getElementById('nameModal');
+    const nameInput = document.getElementById('nameInput');
+    const nameSave = document.getElementById('nameSave');
+    const nameCancel = document.getElementById('nameCancel');
+
+    const wordsModal = document.getElementById('wordsModal');
+    const wordLangSelect = document.getElementById('wordLangSelect');
+    const wordA = document.getElementById('wordA');
+    const wordB = document.getElementById('wordB');
+    const addWordBtn = document.getElementById('addWordBtn');
+    const clearCustomBtn = document.getElementById('clearCustomBtn');
+    const wordList = document.getElementById('wordList');
+    const wordsClose = document.getElementById('wordsClose');
 
     // ===== Oyun Durumu =====
     let first = null, second = null, lock = false;
@@ -142,18 +202,50 @@
 
     // ===== Yardımcılar =====
     function shuffle(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
-    function buildPairs(lang, needed) { const base = pool[lang]; const pairs = []; let i = 0; while (pairs.length < needed) { const p = base[i % base.length]; pairs.push([p[0], p[1]]); i++; } return pairs; }
+
+    function getCustom(){ try{ return JSON.parse(localStorage.getItem(CUSTOM_KEY) || '{"en":[],"kr":[]}'); } catch{ return {en:[], kr:[]}; } }
+    function setCustom(obj){ localStorage.setItem(CUSTOM_KEY, JSON.stringify(obj)); }
+
+    function getPool(lang){ const custom = getCustom(); return defaultPool[lang].concat(custom[lang] || []); }
+
+    function samplePairs(lang, needed) {
+      const base = getPool(lang).slice();
+      shuffle(base);
+      const picked = base.slice(0, needed);
+      return picked;
+    }
 
     // ===== İsim =====
-    const NAME_KEY = 'mahjong_player_name_v1';
-    function askName(force=false){ let name = localStorage.getItem(NAME_KEY); if(!name || force){ name = prompt('Oyuncu adını gir:', name || '') || 'Misafir'; localStorage.setItem(NAME_KEY, name); } playerNameLabel.textContent = name; return name; }
-    changeNameBtn.addEventListener('click', ()=> askName(true));
+    function openNameModal(force=false){ const current = localStorage.getItem(NAME_KEY) || ''; nameInput.value = current; nameModal.style.display='flex'; nameInput.focus(); }
+    function closeNameModal(){ nameModal.style.display='none'; }
+    function saveName(){ const name = (nameInput.value || '').trim() || 'Misafir'; localStorage.setItem(NAME_KEY, name); playerNameLabel.textContent = name; closeNameModal(); }
+    changeNameBtn.addEventListener('click', ()=> openNameModal(true));
+    nameSave.addEventListener('click', saveName);
+    nameCancel.addEventListener('click', closeNameModal);
+
+    function ensureName(){ let name = localStorage.getItem(NAME_KEY); if(!name){ openNameModal(true); } else { playerNameLabel.textContent = name; } }
+
+    // ===== Kelime Yönetimi =====
+    function openWordsModal(){ wordsModal.style.display='flex'; renderWordList(); }
+    function closeWordsModal(){ wordsModal.style.display='none'; }
+    manageWordsBtn.addEventListener('click', openWordsModal);
+    wordsClose.addEventListener('click', closeWordsModal);
+
+    function renderWordList(){ const lang = wordLangSelect.value; const custom = getCustom(); const list = custom[lang] || []; wordList.innerHTML=''; if(list.length===0){ wordList.innerHTML = '<div style="color:#94a3b8; font-size:13px;">Henüz özel kelime yok.</div>'; return; }
+      list.forEach((p, i)=>{ const div=document.createElement('div'); div.className='word-item'; div.innerHTML = `<div><strong>${p[0]}</strong> <small>→</small> ${p[1]}</div><button data-i="${i}" class="warn">Sil</button>`; div.querySelector('button').addEventListener('click', ()=>{ const c=getCustom(); c[lang].splice(i,1); setCustom(c); renderWordList(); }); wordList.appendChild(div); }); }
+
+    wordLangSelect.addEventListener('change', renderWordList);
+
+    addWordBtn.addEventListener('click', ()=>{ const a = wordA.value.trim(); const b = wordB.value.trim(); if(!a || !b) return; const lang = wordLangSelect.value; const c = getCustom(); c[lang] = c[lang] || []; c[lang].push([a,b]); setCustom(c); wordA.value=''; wordB.value=''; renderWordList(); });
+
+    clearCustomBtn.addEventListener('click', ()=>{ if(!confirm('Özel kelimeler silinsin mi?')) return; setCustom({en:[], kr:[]}); renderWordList(); });
 
     // ===== Zaman =====
     function startTimer(){ clearInterval(timer); timer = setInterval(()=>{ if(!gameActive) return; timeLeft--; timeLeftEl.textContent = timeLeft; if(timeLeft<=0){ endGame(false); } }, 1000); }
 
     // ===== Oyun Kurulumu =====
-    function setupBoard(){ const lang = langSelect.value; const lvl = Number(levelSelect.value); const neededPairs = levelPairs[lvl]; const pairs = buildPairs(lang, neededPairs);
+    function setupBoard(){ const lang = langSelect.value; const lvl = Number(levelSelect.value); const neededPairs = levelPairs[lvl]; const poolNow = getPool(lang); if(poolNow.length < neededPairs){ alert('Kelime havuzunda yeterli kelime yok! Lütfen kelime ekleyin.'); return; }
+      const pairs = samplePairs(lang, neededPairs);
       const tiles = []; pairs.forEach(([a,b], idx)=>{ tiles.push({id:idx, text:a}); tiles.push({id:idx, text:b}); });
       totalPairs = pairs.length; moves=0; matches=0; score=0; movesEl.textContent=moves; matchesEl.textContent=matches; scoreEl.textContent=score; statusEl.textContent='';
       boardEl.innerHTML=''; first=null; second=null; lock=false;
@@ -169,8 +261,7 @@
     }
     function resetPick(){ first=null; second=null; lock=false; }
 
-    // ===== En İyiler (LocalStorage) =====
-    const BEST_KEY = 'mahjong_best_v2';
+    // ===== En İyiler (LocalStorage - Silinmez) =====
     function loadBest(){ try{ return JSON.parse(localStorage.getItem(BEST_KEY) || '[]'); } catch{ return []; } }
     function saveBest(entry){ const list = loadBest(); list.push(entry); list.sort((a,b)=> b.score - a.score); const trimmed = list.slice(0, 10); localStorage.setItem(BEST_KEY, JSON.stringify(trimmed)); }
     function renderBest(){ const list = loadBest(); bestBody.innerHTML=''; if(list.length===0){ const tr=document.createElement('tr'); tr.className='best-row'; tr.innerHTML='<td colspan="6">Henüz kayıt yok</td>'; bestBody.appendChild(tr); return; }
@@ -180,11 +271,9 @@
       statusEl.innerHTML = won ? `<span class="success">Kazandın! Skor: ${score}</span>` : `<span class="danger">Süre Doldu ⏰ Skor: ${score}</span>`;
       saveBest({ date:new Date().toISOString(), name, lang, lvl, duration, score }); renderBest(); }
 
-    clearBestBtn.addEventListener('click', ()=>{ localStorage.removeItem(BEST_KEY); renderBest(); });
     startBtn.addEventListener('click', startGame); resetBtn.addEventListener('click', startGame);
 
     // İlk açılış
-    askName(false); renderBest(); timeLeftEl.textContent = timeSelect.value;
-  </script>
-</body>
+    ensureName(); renderBest(); timeLeftEl.textContent = timeSelect.value;
+  </script></body>
 </html>
