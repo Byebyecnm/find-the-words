@@ -4,142 +4,51 @@
 <meta charset="UTF-8">
 <title>Roguelike Prototype</title>
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #1b1b1b;
-    color: #eee;
-  }
+body { margin:0; font-family:Arial; background:#1b1b1b; color:#eee; }
+.screen { display:none; height:100vh; width:100vw; }
+.active { display:flex; }
+button, input { padding:10px 14px; font-size:16px; }
 
-  .screen { display: none; height: 100vh; width: 100vw; }
-  .active { display: flex; }
+#loginScreen { justify-content:center; align-items:center; flex-direction:column; gap:12px; }
 
-  button, input {
-    padding: 10px 14px;
-    font-size: 16px;
-  }
+#characterSelectScreen { flex-direction:column; padding:20px; gap:20px; }
+.cardRow { display:flex; gap:20px; flex-wrap:wrap; }
+.charCard {
+  background:#2a2a2a; border:2px solid #6b3fa0; border-radius:8px;
+  padding:16px; width:220px; cursor:pointer; text-align:center;
+}
+.charCard img { width:100px; height:100px; object-fit:cover; border-radius:50%; }
 
-  /* LOGIN */
-  #loginScreen {
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 12px;
-  }
+#gameScreen {
+  display:grid;
+  grid-template-columns:260px 1fr 260px;
+  height:100vh;
+}
 
-  /* CHARACTER SELECT */
-  #characterSelectScreen {
-    flex-direction: column;
-    padding: 20px;
-    gap: 20px;
-  }
+.panel { border:3px solid #6b3fa0; margin:6px; padding:8px; box-sizing:border-box; }
+.centerPanel { border:3px solid #c28b4b; margin:6px; padding:10px; }
 
-  .cardRow {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
+.leftPanel { display:grid; grid-template-rows:220px 1fr 160px; gap:8px; }
 
-  .charCard {
-    background: #2a2a2a;
-    border: 2px solid #6b3fa0; /* mor */
-    border-radius: 8px;
-    padding: 16px;
-    width: 220px;
-    cursor: pointer;
-  }
+.portrait { width:64px; height:64px; border-radius:50%; background:#666; margin-bottom:6px; object-fit:cover; }
 
-  .charCard:hover {
-    border-color: #c28b4b; /* kahve */
-  }
+.barContainer { margin-bottom:6px; }
+.barLabel { font-size:12px; margin-bottom:2px; }
+.bar { background:#333; border:1px solid #555; height:16px; position:relative; overflow:hidden; }
+.barFill { height:100%; }
+.hp { background:#4caf50; }
+.mana { background:#2196f3; }
+.dmg { background:#f44336; }
+.res { background:#9c27b0; }
+.barText {
+  position:absolute; width:100%; text-align:center; font-size:11px; line-height:16px; color:#fff;
+}
 
-  .charName {
-    font-size: 20px;
-    font-weight: bold;
-  }
+.log { font-size:14px; line-height:1.4; max-height:100%; overflow-y:auto; }
 
-  /* GAME UI */
-  #gameScreen {
-    display: grid;
-    grid-template-columns: 260px 1fr 260px;
-    height: 100vh;
-  }
-
-  .panel {
-    border: 3px solid #6b3fa0;
-    margin: 6px;
-    padding: 8px;
-    box-sizing: border-box;
-  }
-
-  .leftPanel {
-    display: grid;
-    grid-template-rows: 200px 1fr 160px;
-    gap: 8px;
-  }
-
-  .centerPanel {
-    border: 3px solid #c28b4b;
-    margin: 6px;
-    padding: 10px;
-  }
-
-  .rightPanel {
-    border: 3px solid #6b3fa0;
-    margin: 6px;
-    padding: 10px;
-  }
-
-  .portrait {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: #666;
-    margin-bottom: 6px;
-  }
-
-  .barContainer {
-    margin-bottom: 6px;
-  }
-
-  .barLabel {
-    font-size: 12px;
-    margin-bottom: 2px;
-  }
-
-  .bar {
-    background: #333;
-    border: 1px solid #555;
-    height: 16px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .barFill {
-    height: 100%;
-  }
-
-  .hp { background: #4caf50; }
-  .mana { background: #2196f3; }
-  .dmg { background: #f44336; }
-  .res { background: #9c27b0; }
-
-  .barText {
-    position: absolute;
-    width: 100%;
-    text-align: center;
-    font-size: 11px;
-    line-height: 16px;
-    color: #fff;
-    pointer-events: none;
-  }
-
-  .log {
-    font-size: 14px;
-    line-height: 1.4;
-    max-height: 100%;
-    overflow-y: auto;
-  }
+.battleArea { text-align:center; }
+.battleArea img { width:160px; height:160px; object-fit:cover; }
+.battleButtons { margin-top:10px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
 </style>
 </head>
 <body>
@@ -155,57 +64,42 @@
 <div id="characterSelectScreen" class="screen">
   <h2>Karakterini Seç</h2>
   <div class="cardRow" id="cardRow"></div>
-  <button id="rerollBtn">Yenile (1 hak +)</button>
+  <button id="rerollBtn">Yenile (1 hak)</button>
 </div>
 
 <!-- GAME -->
 <div id="gameScreen" class="screen">
   <div class="leftPanel panel">
-    <!-- TOP -->
     <div>
-      <div class="portrait"></div>
+      <img id="portrait" class="portrait" src="" />
       <div id="charName"></div>
 
       <div class="barContainer">
         <div class="barLabel">Can</div>
-        <div class="bar">
-          <div class="barFill hp" id="hpBar"></div>
-          <div class="barText" id="hpText"></div>
-        </div>
+        <div class="bar"><div class="barFill hp" id="hpBar"></div><div class="barText" id="hpText"></div></div>
       </div>
-
       <div class="barContainer">
         <div class="barLabel">Mana</div>
-        <div class="bar">
-          <div class="barFill mana" id="manaBar"></div>
-          <div class="barText" id="manaText"></div>
-        </div>
+        <div class="bar"><div class="barFill mana" id="manaBar"></div><div class="barText" id="manaText"></div></div>
       </div>
-
       <div class="barContainer">
         <div class="barLabel">Hasar</div>
-        <div class="bar">
-          <div class="barFill dmg" id="dmgBar"></div>
-          <div class="barText" id="dmgText"></div>
-        </div>
+        <div class="bar"><div class="barFill dmg" id="dmgBar"></div><div class="barText" id="dmgText"></div></div>
       </div>
-
       <div class="barContainer">
         <div class="barLabel">Direnç</div>
-        <div class="bar">
-          <div class="barFill res" id="resBar"></div>
-          <div class="barText" id="resText"></div>
-        </div>
+        <div class="bar"><div class="barFill res" id="resBar"></div><div class="barText" id="resText"></div></div>
       </div>
+
+      <div>Gold: <span id="goldText">0</span></div>
+      <div>Mana Potu: <span id="manaPotText">2</span></div>
     </div>
 
-    <!-- MIDDLE -->
     <div>
       <h3>Özellikler</h3>
       <ul id="perkList"></ul>
     </div>
 
-    <!-- BOTTOM -->
     <div>
       <h3>Eşyalar</h3>
       <div>Boş</div>
@@ -214,12 +108,17 @@
 
   <!-- CENTER -->
   <div class="centerPanel">
-    <h2>Oyun Alanı</h2>
-    <p>Buraya savaşlar, eventler ve seçimler gelecek.</p>
+    <div class="battleArea" id="battleArea"></div>
+    <div class="battleButtons">
+      <button onclick="playerAttack()">⚔️ Saldır</button>
+      <button onclick="playerSkill()">🔮 Skill</button>
+      <button onclick="playerDefend()">🛡️ Savun</button>
+      <button onclick="useManaPot()">🧪 Mana Potu</button>
+    </div>
   </div>
 
   <!-- RIGHT -->
-  <div class="rightPanel">
+  <div class="panel">
     <h3>Log</h3>
     <div class="log" id="logBox"></div>
   </div>
@@ -227,122 +126,167 @@
 
 <script>
 const characters = [
-  { name: "Frieren", hp: 60, mana: 120, dmg: 40, res: 30, perks: ["Büyüler güçlü"] },
-  { name: "Fern", hp: 70, mana: 110, dmg: 45, res: 35, perks: ["Mana verimi +"] },
-  { name: "Eren Yeager", hp: 120, mana: 20, dmg: 80, res: 60, perks: ["Öfke modu"] },
-  { name: "Levi Ackerman", hp: 90, mana: 30, dmg: 85, res: 50, perks: ["Kritik +"] },
-  { name: "Light Yagami", hp: 70, mana: 80, dmg: 60, res: 40, perks: ["Strateji bonusu"] },
-  { name: "The L", hp: 65, mana: 90, dmg: 50, res: 45, perks: ["Analiz bonusu"] }
+  { name:"Frieren", img:"images/frieren.png", hp:60, mana:120, dmg:40, res:30, perks:["Büyü uzmanı"], skillMult:1.7, skillCost:30 },
+  { name:"Fern", img:"images/fern.png", hp:70, mana:110, dmg:45, res:35, perks:["Mana verimli"], skillMult:1.6, skillCost:25 },
+  { name:"Eren Yeager", img:"images/eren.png", hp:120, mana:20, dmg:80, res:60, perks:["Öfke"], skillMult:1.4, skillCost:15 },
+  { name:"Levi Ackerman", img:"images/levi.png", hp:90, mana:30, dmg:85, res:50, perks:["Kritik"], skillMult:1.5, skillCost:20 },
+  { name:"Light Yagami", img:"images/light.png", hp:70, mana:80, dmg:60, res:40, perks:["Strateji"], skillMult:1.6, skillCost:25 },
+  { name:"The L", img:"images/l.png", hp:65, mana:90, dmg:50, res:45, perks:["Analiz"], skillMult:1.6, skillCost:25 }
 ];
 
-const helperCharacters = [
-  "Himmel",
-  "Stark",
-  "Mikasa Ackerman",
-  "Komutan Erwin",
-  "Shinigami / Misa Misa",
-  "Light Yagami"
-];
+let player = null;
+let enemy = null;
+let defending = false;
+let gold = 0;
+let manaPots = 2;
 
-// Screens
 const loginScreen = document.getElementById("loginScreen");
 const selectScreen = document.getElementById("characterSelectScreen");
 const gameScreen = document.getElementById("gameScreen");
-
-// Inputs
-const startBtn = document.getElementById("startBtn");
-const playerNameInput = document.getElementById("playerNameInput");
 const cardRow = document.getElementById("cardRow");
-const rerollBtn = document.getElementById("rerollBtn");
 
-// HUD
+const portrait = document.getElementById("portrait");
 const charNameEl = document.getElementById("charName");
 const hpBar = document.getElementById("hpBar");
 const manaBar = document.getElementById("manaBar");
 const dmgBar = document.getElementById("dmgBar");
 const resBar = document.getElementById("resBar");
-
 const hpText = document.getElementById("hpText");
 const manaText = document.getElementById("manaText");
 const dmgText = document.getElementById("dmgText");
 const resText = document.getElementById("resText");
-
 const perkList = document.getElementById("perkList");
 const logBox = document.getElementById("logBox");
+const battleArea = document.getElementById("battleArea");
+const goldText = document.getElementById("goldText");
+const manaPotText = document.getElementById("manaPotText");
 
-let playerName = "";
-let rerollsLeft = 1;
-
-function randomThree() {
-  const shuffled = [...characters].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, 3);
-}
-
-function renderCards() {
-  cardRow.innerHTML = "";
-  const picks = randomThree();
-
-  picks.forEach(char => {
-    const div = document.createElement("div");
-    div.className = "charCard";
-    div.innerHTML = `
-      <div class="charName">${char.name}</div>
-      <p>HP: ${char.hp} | Mana: ${char.mana}</p>
-      <p>Hasar: ${char.dmg} | Direnç: ${char.res}</p>
-    `;
-    div.onclick = () => selectCharacter(char);
-    cardRow.appendChild(div);
-  });
-}
-
-function selectCharacter(char) {
-  charNameEl.textContent = playerName + " - " + char.name;
-
-  const max = 120; // ölçek
-  hpBar.style.width = Math.min(char.hp / max * 100, 100) + "%";
-  manaBar.style.width = Math.min(char.mana / max * 100, 100) + "%";
-  dmgBar.style.width = Math.min(char.dmg / max * 100, 100) + "%";
-  resBar.style.width = Math.min(char.res / max * 100, 100) + "%";
-
-  hpText.textContent = `${char.hp}/120`;
-  manaText.textContent = `${char.mana}/120`;
-  dmgText.textContent = `${char.dmg}/120`;
-  resText.textContent = `${char.res}/120`;
-
-  perkList.innerHTML = "";
-  char.perks.forEach(p => {
-    const li = document.createElement("li");
-    li.textContent = p;
-    perkList.appendChild(li);
-  });
-
-  logBox.innerHTML += `<div>${char.name} seçildi.</div>`;
-
-  selectScreen.classList.remove("active");
-  gameScreen.classList.add("active");
-}
-
-startBtn.onclick = () => {
-  if (!playerNameInput.value.trim()) {
-    alert("İsim gir!");
-    return;
-  }
-  playerName = playerNameInput.value.trim();
+document.getElementById("startBtn").onclick = () => {
   loginScreen.classList.remove("active");
   selectScreen.classList.add("active");
   renderCards();
 };
 
-rerollBtn.onclick = () => {
-  if (rerollsLeft <= 0) {
-    alert("Yenileme hakkın kalmadı!");
+document.getElementById("rerollBtn").onclick = () => renderCards();
+
+function randomThree() {
+  return [...characters].sort(()=>0.5-Math.random()).slice(0,3);
+}
+
+function renderCards() {
+  cardRow.innerHTML = "";
+  randomThree().forEach(c=>{
+    const d=document.createElement("div");
+    d.className="charCard";
+    d.innerHTML=`<img src="${c.img}"><div><b>${c.name}</b></div>`;
+    d.onclick=()=>selectCharacter(c);
+    cardRow.appendChild(d);
+  });
+}
+
+function selectCharacter(c) {
+  player = JSON.parse(JSON.stringify(c));
+  player.maxHp = player.hp;
+  player.maxMana = player.mana;
+
+  portrait.src = c.img;
+  charNameEl.textContent = c.name;
+
+  perkList.innerHTML="";
+  c.perks.forEach(p=>{ const li=document.createElement("li"); li.textContent=p; perkList.appendChild(li); });
+
+  selectScreen.classList.remove("active");
+  gameScreen.classList.add("active");
+
+  startBattle();
+}
+
+function startBattle() {
+  enemy = { name:"Düşman", img:"images/enemy.png", hp:80+Math.floor(Math.random()*40), dmg:20+Math.floor(Math.random()*10), res:10 };
+  updateUI();
+  renderBattle();
+  logBox.innerHTML += `<div>Yeni düşman çıktı!</div>`;
+}
+
+function renderBattle() {
+  battleArea.innerHTML = `
+    <h3>${enemy.name}</h3>
+    <img src="${enemy.img}">
+    <div>HP: ${enemy.hp}</div>
+  `;
+}
+
+function updateUI() {
+  hpBar.style.width = (player.hp/player.maxHp*100)+"%";
+  manaBar.style.width = (player.mana/player.maxMana*100)+"%";
+  dmgBar.style.width = "100%";
+  resBar.style.width = "100%";
+
+  hpText.textContent = `${player.hp}/${player.maxHp}`;
+  manaText.textContent = `${player.mana}/${player.maxMana}`;
+  dmgText.textContent = player.dmg;
+  resText.textContent = player.res;
+
+  goldText.textContent = gold;
+  manaPotText.textContent = manaPots;
+}
+
+function log(t){ logBox.innerHTML += `<div>${t}</div>`; logBox.scrollTop = logBox.scrollHeight; }
+
+function playerAttack() {
+  let dmg = Math.max(1, player.dmg - enemy.res);
+  enemy.hp -= dmg;
+  log(`Sen ${dmg} hasar verdin.`);
+  afterPlayerTurn();
+}
+
+function playerSkill() {
+  if (player.mana < player.skillCost) { log("Yetersiz mana!"); return; }
+  player.mana -= player.skillCost;
+  let dmg = Math.floor((player.dmg - enemy.res) * player.skillMult);
+  if (dmg < 1) dmg = 1;
+  enemy.hp -= dmg;
+  log(`Skill kullandın! ${dmg} hasar verdin.`);
+  afterPlayerTurn();
+}
+
+function playerDefend() {
+  defending = true;
+  log("Savunmaya geçtin.");
+  enemyTurn();
+}
+
+function useManaPot() {
+  if (manaPots <= 0) { log("Mana potu yok!"); return; }
+  manaPots--;
+  player.mana = Math.min(player.maxMana, player.mana + 40);
+  log("Mana potu kullandın.");
+  enemyTurn();
+}
+
+function afterPlayerTurn() {
+  if (enemy.hp <= 0) {
+    log("Düşmanı yendin!");
+    gold += 20;
+    startBattle();
     return;
   }
-  rerollsLeft--;
-  renderCards();
-  rerollBtn.textContent = "Yenile (0 hak)";
-};
-</script>
+  enemyTurn();
+}
 
+function enemyTurn() {
+  let dmg = Math.max(1, enemy.dmg - player.res);
+  if (defending) { dmg = Math.floor(dmg/2); defending=false; log("Savunma hasarı azalttı."); }
+  player.hp -= dmg;
+  log(`Düşman sana ${dmg} hasar verdi.`);
+  if (player.hp <= 0) {
+    alert("Öldün! Oyun bitti.");
+    location.reload();
+    return;
+  }
+  updateUI();
+  renderBattle();
+}
+</script>
 </body>
 </html>
