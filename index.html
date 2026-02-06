@@ -79,50 +79,51 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
     </aside><!-- Sağ: Oyun -->
 <main class="app">
   <div class="topbar">
-  <h1>🀄 Kelimeli Mahjong — Zamanlı & Puanlı</h1>
-  <div class="namebar">
-    <span class="badge">Oyuncu:</span>
-    <strong id="playerNameLabel">—</strong>
-    <button id="changeNameBtn" class="ghost">İsmi Değiştir</button>
-    <button id="manageWordsBtn" class="ghost">Kelimeleri Yönet</button>
-  </div>
-  <p>Seviyeler: <b>16</b> / <b>32</b> / <b>64</b> çift. Her oyun kelimeler <b>havuzdan rastgele</b> seçilir. Doğru = +100, Yanlış = -25.</p>
+    <h1>🀄 Kelimeli Mahjong — Zamanlı & Puanlı</h1>
+    <div class="namebar">
+      <span class="badge">Oyuncu:</span>
+      <strong id="playerNameLabel">—</strong>
+      <button id="changeNameBtn" class="ghost">İsmi Değiştir</button>
+      <button id="manageWordsBtn" class="ghost">Kelimeleri Yönet</button>
+    </div>
+    <p>Seviyeler: <b>8</b> / <b>12</b> / <b>16</b> / <b>20</b> / <b>24</b> çift. Her oyun kelimeler <b>havuzdan rastgele</b> seçilir. Doğru = +100, Yanlış = -25.</p>
 
-  <div class="toolbar">
-    <label>
-      Dil:
-      <select id="langSelect">
-        <option value="en">İngilizce</option>
-        <option value="kr">Korece</option>
-      </select>
-    </label>
-    <label>
-      Seviye:
-      <select id="levelSelect">
-        <option value="0">16 Çift</option>
-        <option value="1">32 Çift</option>
-        <option value="2">64 Çift</option>
-      </select>
-    </label>
-    <label>
-      Süre:
-      <select id="timeSelect">
-        <option value="120">120 sn</option>
-        <option value="180">180 sn</option>
-        <option value="300">300 sn</option>
-      </select>
-    </label>
-    <button class="primary" id="startBtn">Başlat</button>
-    <button class="warn" id="resetBtn">Yeniden Başlat</button>
-    <div class="stats">
-      <div>⏱️ <strong id="timeLeft">0</strong>s</div>
-      <div>⭐ <strong id="score">0</strong></div>
-      <div>🎯 <strong id="matches">0</strong></div>
-      <div>👣 <strong id="moves">0</strong></div>
+    <div class="toolbar">
+      <label>
+        Dil:
+        <select id="langSelect">
+          <option value="en">İngilizce</option>
+          <option value="kr">Korece</option>
+        </select>
+      </label>
+      <label>
+        Seviye:
+        <select id="levelSelect">
+          <option value="0">8 Çift</option>
+          <option value="1">12 Çift</option>
+          <option value="2">16 Çift</option>
+          <option value="3">20 Çift</option>
+          <option value="4">24 Çift</option>
+        </select>
+      </label>
+      <label>
+        Süre:
+        <select id="timeSelect">
+          <option value="120">120 sn</option>
+          <option value="180">180 sn</option>
+          <option value="300">300 sn</option>
+        </select>
+      </label>
+      <button class="primary" id="startBtn">Başlat</button>
+      <button class="warn" id="resetBtn">Yeniden Başlat</button>
+      <div class="stats">
+        <div>⏱️ <strong id="timeLeft">0</strong>s</div>
+        <div>⭐ <strong id="score">0</strong></div>
+        <div>🎯 <strong id="matches">0</strong></div>
+        <div>👣 <strong id="moves">0</strong></div>
+      </div>
     </div>
   </div>
-
-        </div>
 
   <div id="board" class="board grid"></div>
   <div class="footer" id="status"></div>
@@ -169,11 +170,11 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
       en: [ ['apple','elma'], ['book','kitap'], ['water','su'], ['sun','güneş'], ['dog','köpek'], ['house','ev'], ['travel','seyahat'], ['friend','arkadaş'], ['music','müzik'], ['money','para'], ['city','şehir'], ['food','yemek'], ['work','iş'], ['school','okul'], ['decision','karar'], ['improve','geliştirmek'], ['environment','çevre'], ['knowledge','bilgi'], ['opportunity','fırsat'], ['challenge','zorluk'], ['culture','kültür'], ['language','dil'], ['future','gelecek'], ['success','başarı'], ['time','zaman'], ['day','gün'], ['night','gece'], ['family','aile'], ['love','sevgi'], ['game','oyun'], ['learn','öğrenmek'], ['write','yazmak'], ['read','okumak'] ],
       kr: [ ['사과','elma'], ['책','kitap'], ['물','su'], ['해','güneş'], ['개','köpek'], ['집','ev'], ['여행','seyahat'], ['친구','arkadaş'], ['음악','müzik'], ['돈','para'], ['도시','şehir'], ['음식','yemek'], ['일','iş'], ['학교','okul'], ['결정','karar'], ['개선하다','geliştirmek'], ['환경','çevre'], ['지식','bilgi'], ['기회','fırsat'], ['도전','zorluk'], ['문화','kültür'], ['언어','dil'], ['미래','gelecek'], ['성공','başarı'], ['시간','zaman'], ['낮','gün'], ['밤','gece'], ['가족','aile'], ['사랑','sevgi'], ['게임','oyun'], ['배우다','öğrenmek'], ['쓰다','yazmak'], ['읽다','okumak'] ]
     };
-    const levelPairs = [16, 32, 64];
+    const levelPairs = [8, 12, 16, 20, 24];
 
     // ===== LocalStorage Keys =====
     const NAME_KEY = 'mahjong_player_name_v2';
-    const BEST_KEY = 'mahjong_best_v3';
+    const BEST_KEY = 'mahjong_best_v4';
     const CUSTOM_KEY = 'mahjong_custom_words_v1';
 
     // ===== DOM =====
@@ -229,14 +230,14 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
     }
 
     // ===== İsim =====
-    function openNameModal(force=false){ const current = localStorage.getItem(NAME_KEY) || ''; nameInput.value = current; nameModal.style.display='flex'; nameInput.focus(); }
+    function openNameModal(){ const current = localStorage.getItem(NAME_KEY) || ''; nameInput.value = current; nameModal.style.display='flex'; nameInput.focus(); }
     function closeNameModal(){ nameModal.style.display='none'; }
     function saveName(){ const name = (nameInput.value || '').trim() || 'Misafir'; localStorage.setItem(NAME_KEY, name); playerNameLabel.textContent = name; closeNameModal(); }
-    changeNameBtn.addEventListener('click', ()=> openNameModal(true));
+    changeNameBtn.addEventListener('click', openNameModal);
     nameSave.addEventListener('click', saveName);
     nameCancel.addEventListener('click', closeNameModal);
 
-    function ensureName(){ let name = localStorage.getItem(NAME_KEY); if(!name){ openNameModal(true); } else { playerNameLabel.textContent = name; } }
+    function ensureName(){ let name = localStorage.getItem(NAME_KEY); if(!name){ openNameModal(); } else { playerNameLabel.textContent = name; } }
 
     // ===== Kelime Yönetimi =====
     function openWordsModal(){ wordsModal.style.display='flex'; renderWordList(); }
@@ -274,15 +275,27 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
     }
     function resetPick(){ first=null; second=null; lock=false; }
 
-    // ===== En İyiler (LocalStorage - Silinmez) =====
+    // ===== En İyiler (Adil Sıralama) =====
+    // Kural: 1) Puan (yüksek daha iyi)
+    //        2) Kalan süre (yüksek daha iyi)
+    //        3) Hamle (düşük daha iyi)
     function loadBest(){ try{ return JSON.parse(localStorage.getItem(BEST_KEY) || '[]'); } catch{ return []; } }
-    function saveBest(entry){ const list = loadBest(); list.push(entry); list.sort((a,b)=> b.score - a.score); const trimmed = list.slice(0, 10); localStorage.setItem(BEST_KEY, JSON.stringify(trimmed)); }
+    function saveBest(entry){ const list = loadBest(); list.push(entry);
+      list.sort((a,b)=>{
+        if(b.score !== a.score) return b.score - a.score;               // 1) Puan
+        if(b.timeLeft !== a.timeLeft) return b.timeLeft - a.timeLeft;   // 2) Kalan süre
+        if(a.moves !== b.moves) return a.moves - b.moves;               // 3) Hamle
+        return 0;
+      });
+      const trimmed = list.slice(0, 10);
+      localStorage.setItem(BEST_KEY, JSON.stringify(trimmed));
+    }
     function renderBest(){ const list = loadBest(); bestBody.innerHTML=''; if(list.length===0){ const tr=document.createElement('tr'); tr.className='best-row'; tr.innerHTML='<td colspan="6">Henüz kayıt yok</td>'; bestBody.appendChild(tr); return; }
-      list.forEach((e,i)=>{ const tr=document.createElement('tr'); tr.className='best-row' + (i===0?' first':''); const lvlText = ['16Ç','32Ç','64Ç'][e.lvl] || ''; const langText = e.lang==='kr'?'KR':'EN'; tr.innerHTML = `<td>${i+1}</td><td>${e.name}</td><td>${langText}</td><td>${lvlText}</td><td>${e.duration}s</td><td><strong>${e.score}</strong></td>`; bestBody.appendChild(tr); }); }
+      list.forEach((e,i)=>{ const tr=document.createElement('tr'); tr.className='best-row' + (i===0?' first':''); const lvlText = levelPairs[e.lvl] + 'Ç'; const langText = e.lang==='kr'?'KR':'EN'; tr.innerHTML = `<td>${i+1}</td><td>${e.name}</td><td>${langText}</td><td>${lvlText}</td><td>${e.used}s</td><td><strong>${e.score}</strong></td>`; bestBody.appendChild(tr); }); }
 
-    function endGame(won){ gameActive=false; clearInterval(timer); lock=true; const name = localStorage.getItem(NAME_KEY) || 'Misafir'; const lang=langSelect.value; const lvl=Number(levelSelect.value); const duration=Number(timeSelect.value);
+    function endGame(won){ gameActive=false; clearInterval(timer); lock=true; const name = localStorage.getItem(NAME_KEY) || 'Misafir'; const lang=langSelect.value; const lvl=Number(levelSelect.value); const totalTime=Number(timeSelect.value); const used = totalTime - Math.max(0, timeLeft);
       statusEl.innerHTML = won ? `<span class="success">Kazandın! Skor: ${score}</span>` : `<span class="danger">Süre Doldu ⏰ Skor: ${score}</span>`;
-      saveBest({ date:new Date().toISOString(), name, lang, lvl, duration, score }); renderBest(); }
+      saveBest({ date:new Date().toISOString(), name, lang, lvl, used, timeLeft, moves, score }); renderBest(); }
 
     startBtn.addEventListener('click', startGame); resetBtn.addEventListener('click', startGame);
 
