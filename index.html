@@ -154,6 +154,9 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
       </div>
     </div>
   </div>  <script>
+  // ====== Helpers ======
+  function $(id){ return document.getElementById(id); }
+
   // ====== State ======
   let playerName = localStorage.getItem('playerName') || '';
   let totalAccountScore = Number(localStorage.getItem('accountScore')||0);
@@ -169,15 +172,37 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
   let mistakeStreak = 0; // arka arkaya hata
   let hintActiveIndex = null;
 
-  const board = document.getElementById('board');
-  const scoreEl = document.getElementById('score');
-  const timeEl = document.getElementById('time');
-  const movesEl = document.getElementById('moves');
-  const accountEl = document.getElementById('accountScore');
+  const board = $('board');
+  const scoreEl = $('score');
+  const timeEl = $('time');
+  const movesEl = $('moves');
+  const accountEl = $('accountScore');
+
+  function refreshStats(){
+    if(scoreEl) scoreEl.textContent = score;
+    if(timeEl) timeEl.textContent = timeLeft;
+    if(movesEl) movesEl.textContent = moves;
+    if(accountEl) accountEl.textContent = totalAccountScore;
+  }
+
+  // ====== Name ======
+  function askName(force=false){
+    if(playerName && !force) return;
+    const n = prompt('Oyuncu adını gir:');
+    if(n && n.trim()){
+      playerName = n.trim();
+      localStorage.setItem('playerName', playerName);
+      const nameBadge = $('nameBadge');
+      if(nameBadge) nameBadge.textContent = playerName;
+    }
+  }
+
+  const changeNameBtn = $('changeNameBtn');
+  if(changeNameBtn){ changeNameBtn.onclick = ()=>askName(true); }
 
   // ====== Utils ======
   function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
-  function nearSquareCols(n){ const c = Math.ceil(Math.sqrt(n)); return c; }
+  function nearSquareCols(n){ return Math.ceil(Math.sqrt(n)); }
   function setGrid(n){ const cols = nearSquareCols(n); board.style.gridTemplateColumns = `repeat(${cols}, minmax(80px, 1fr))`; }
 
   // ====== Words ======
@@ -197,10 +222,7 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
     clearInterval(timer);
     first = null; lock = false; moves = 0; score = 0; streak = 0; mistakeStreak = 0; hintActiveIndex = null;
     timeLeft = 120;
-    movesEl.textContent = moves;
-    scoreEl.textContent = score;
-    timeEl.textContent = timeLeft;
-    accountEl.textContent = totalAccountScore;
+    refreshStats();
 
     const pool = getPool();
     if(pool.length < pairs){ alert('Yeterli kelime yok. Kelimeleri Yönet kısmından ekleyebilirsin.'); return; }
@@ -226,32 +248,26 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
     });
 
     timer = setInterval(()=>{
-      timeLeft--; timeEl.textContent = timeLeft;
+      timeLeft--; refreshStats();
       if(timeLeft<=0){ endGame(); }
     },1000);
   }
 
   // ====== Scoring Rules ======
   function applyMatch(){
-    // Doğru bulma: 15p, seri varsa 30p
-    if(streak>=1){ score += 30; }
-    else{ score += 15; }
-    streak++;
-    mistakeStreak = 0;
+    if(streak>=1){ score += 30; } else { score += 15; }
+    streak++; mistakeStreak = 0;
   }
   function applyMistake(){
-    // Hata: 5p, art arda hata: 10p
-    if(mistakeStreak>=1){ score -= 10; }
-    else{ score -= 5; }
-    mistakeStreak++;
-    streak = 0;
+    if(mistakeStreak>=1){ score -= 10; } else { score -= 5; }
+    mistakeStreak++; streak = 0;
   }
 
   // ====== Hint ======
   function useHint(){
     if(score < 20){ alert('Hint için en az 20 puan gerekir.'); return; }
     if(hintActiveIndex !== null){ alert('Zaten bir hint açık.'); return; }
-    score -= 20; scoreEl.textContent = score;
+    score -= 20; refreshStats();
     const tiles = [...document.querySelectorAll('.tile')].filter(t=>!t.classList.contains('matched'));
     if(tiles.length===0) return;
     const pick = tiles[Math.floor(Math.random()*tiles.length)];
@@ -269,28 +285,23 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
 
     if(first===null){ first = el; return; }
 
-    moves++; movesEl.textContent = moves;
+    moves++; refreshStats();
     const second = el;
 
     if(first.dataset.key === second.dataset.key){
-      // match
       first.classList.add('matched'); second.classList.add('matched');
       first.classList.remove('revealed'); second.classList.remove('revealed');
       applyMatch();
 
-      // Eğer hint ile açılan taş eşleştiyse +10
       if(hintActiveIndex !== null && (first.dataset.index===hintActiveIndex || second.dataset.index===hintActiveIndex)){
-        score += 10;
-        hintActiveIndex = null;
+        score += 10; hintActiveIndex = null;
       }
 
-      scoreEl.textContent = score;
+      refreshStats();
       first = null;
       checkWin();
     } else {
-      // mistake
-      applyMistake();
-      scoreEl.textContent = score;
+      applyMistake(); refreshStats();
       lock = true;
       setTimeout(()=>{
         first.classList.add('hidden'); second.classList.add('hidden');
@@ -309,7 +320,7 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
     clearInterval(timer);
     totalAccountScore += Math.max(0, score);
     localStorage.setItem('accountScore', String(totalAccountScore));
-    accountEl.textContent = totalAccountScore;
+    refreshStats();
     saveScore(win);
     alert(win ? 'Tebrikler! Oyun bitti.' : 'Süre doldu!');
   }
@@ -318,8 +329,7 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
   function saveScore(win){
     const list = JSON.parse(localStorage.getItem('scores')||'[]');
     list.push({ name: playerName||'Oyuncu', lang: currentLang, pairs, time: timeLeft, moves, score });
-    // Adil sıralama: skor desc, süre asc, hamle asc
-    list.sort((a,b)=> (b.score-a.score) || (a.time-b.time) || (a.moves-b.moves));
+    list.sort((a,b)=> (b.score-a.score) || (b.time-a.time) || (a.moves-b.moves));
     localStorage.setItem('scores', JSON.stringify(list));
     renderBoard();
   }
@@ -338,15 +348,21 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
   }
 
   // ====== UI Hooks ======
-  document.getElementById('startBtn').onclick = ()=>{
-    currentLang = document.getElementById('langSel').value;
-    pairs = Number(document.getElementById('pairsSel').value);
-    startGame();
-  };
-  document.getElementById('hintBtn').onclick = useHint;
+  const startBtn = $('startBtn');
+  if(startBtn){ startBtn.onclick = ()=>{
+      currentLang = $('langSel').value;
+      pairs = Number($('pairsSel').value);
+      startGame();
+    }; }
 
-  // Init
+  const hintBtn = $('hintBtn');
+  if(hintBtn){ hintBtn.onclick = useHint; }
+
+  // ====== Init ======
+  askName();
+  const nameBadge = $('nameBadge');
+  if(nameBadge) nameBadge.textContent = playerName || 'Oyuncu';
   renderBoard();
-  accountEl.textContent = totalAccountScore;
+  refreshStats();
 </script></body>
 </html>
