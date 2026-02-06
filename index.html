@@ -7,18 +7,16 @@
   body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #1e1e1e;
+    background: #1b1b1b;
     color: #eee;
   }
 
-  .screen {
-    display: none;
-    height: 100vh;
-    width: 100vw;
-  }
+  .screen { display: none; height: 100vh; width: 100vw; }
+  .active { display: flex; }
 
-  .active {
-    display: flex;
+  button, input {
+    padding: 10px 14px;
+    font-size: 16px;
   }
 
   /* LOGIN */
@@ -27,11 +25,6 @@
     align-items: center;
     flex-direction: column;
     gap: 12px;
-  }
-
-  input, button {
-    padding: 10px 14px;
-    font-size: 16px;
   }
 
   /* CHARACTER SELECT */
@@ -44,11 +37,12 @@
   .cardRow {
     display: flex;
     gap: 20px;
+    flex-wrap: wrap;
   }
 
   .charCard {
     background: #2a2a2a;
-    border: 2px solid #555;
+    border: 2px solid #6b3fa0; /* mor */
     border-radius: 8px;
     padding: 16px;
     width: 220px;
@@ -56,7 +50,7 @@
   }
 
   .charCard:hover {
-    border-color: #aaa;
+    border-color: #c28b4b; /* kahve */
   }
 
   .charName {
@@ -64,69 +58,80 @@
     font-weight: bold;
   }
 
-  .controls {
-    display: flex;
-    gap: 10px;
-  }
-
   /* GAME UI */
   #gameScreen {
     display: grid;
-    grid-template-columns: 300px 1fr 300px;
-    grid-template-rows: 1fr;
+    grid-template-columns: 260px 1fr 260px;
     height: 100vh;
   }
 
-  .leftPanel {
-    border-right: 2px solid #444;
-    padding: 10px;
-    display: grid;
-    grid-template-rows: 200px 1fr 200px;
-    gap: 10px;
+  .panel {
+    border: 3px solid #6b3fa0;
+    margin: 6px;
+    padding: 8px;
+    box-sizing: border-box;
   }
 
-  .rightPanel {
-    border-left: 2px solid #444;
-    padding: 10px;
+  .leftPanel {
+    display: grid;
+    grid-template-rows: 200px 1fr 160px;
+    gap: 8px;
   }
 
   .centerPanel {
+    border: 3px solid #c28b4b;
+    margin: 6px;
     padding: 10px;
   }
 
-  .charInfo {
-    border: 2px solid #444;
+  .rightPanel {
+    border: 3px solid #6b3fa0;
+    margin: 6px;
     padding: 10px;
   }
 
   .portrait {
-    width: 80px;
-    height: 80px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background: #666;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
+  }
+
+  .barContainer {
+    margin-bottom: 6px;
+  }
+
+  .barLabel {
+    font-size: 12px;
+    margin-bottom: 2px;
   }
 
   .bar {
     background: #333;
     border: 1px solid #555;
     height: 16px;
-    margin-bottom: 6px;
     position: relative;
+    overflow: hidden;
   }
 
   .barFill {
     height: 100%;
-    background: #4caf50;
   }
 
+  .hp { background: #4caf50; }
   .mana { background: #2196f3; }
-  .damage { background: #f44336; }
-  .resist { background: #9c27b0; }
+  .dmg { background: #f44336; }
+  .res { background: #9c27b0; }
 
-  .sectionBox {
-    border: 2px solid #444;
-    padding: 10px;
+  .barText {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-size: 11px;
+    line-height: 16px;
+    color: #fff;
+    pointer-events: none;
   }
 
   .log {
@@ -139,197 +144,204 @@
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="loginScreen" class="screen active">
   <h1>Oyuna Hoş Geldin</h1>
   <input id="playerNameInput" placeholder="Karakter adını gir" />
   <button id="startBtn">Başla</button>
 </div>
 
-<!-- CHARACTER SELECT SCREEN -->
+<!-- CHARACTER SELECT -->
 <div id="characterSelectScreen" class="screen">
   <h2>Karakterini Seç</h2>
   <div class="cardRow" id="cardRow"></div>
-  <div class="controls">
-    <button id="rerollBtn">Yenile (1 hak)</button>
-  </div>
+  <button id="rerollBtn">Yenile (1 hak +)</button>
 </div>
 
-<!-- GAME SCREEN -->
+<!-- GAME -->
 <div id="gameScreen" class="screen">
-  <div class="leftPanel">
-    <!-- TOP LEFT: CHARACTER INFO -->
-    <div class="charInfo">
-      <div class="portrait" id="portrait"></div>
-      <div id="gameTitle">Oyun Adı</div>
-      <div id="charName">Karakter</div>
+  <div class="leftPanel panel">
+    <!-- TOP -->
+    <div>
+      <div class="portrait"></div>
+      <div id="charName"></div>
 
-      <div>Can</div>
-      <div class="bar"><div class="barFill" id="hpBar"></div></div>
+      <div class="barContainer">
+        <div class="barLabel">Can</div>
+        <div class="bar">
+          <div class="barFill hp" id="hpBar"></div>
+          <div class="barText" id="hpText"></div>
+        </div>
+      </div>
 
-      <div>Mana</div>
-      <div class="bar"><div class="barFill mana" id="manaBar"></div></div>
+      <div class="barContainer">
+        <div class="barLabel">Mana</div>
+        <div class="bar">
+          <div class="barFill mana" id="manaBar"></div>
+          <div class="barText" id="manaText"></div>
+        </div>
+      </div>
 
-      <div>Hasar</div>
-      <div class="bar"><div class="barFill damage" id="dmgBar"></div></div>
+      <div class="barContainer">
+        <div class="barLabel">Hasar</div>
+        <div class="bar">
+          <div class="barFill dmg" id="dmgBar"></div>
+          <div class="barText" id="dmgText"></div>
+        </div>
+      </div>
 
-      <div>Direnç</div>
-      <div class="bar"><div class="barFill resist" id="resBar"></div></div>
+      <div class="barContainer">
+        <div class="barLabel">Direnç</div>
+        <div class="bar">
+          <div class="barFill res" id="resBar"></div>
+          <div class="barText" id="resText"></div>
+        </div>
+      </div>
     </div>
 
-    <!-- MIDDLE LEFT: PERKS -->
-    <div class="sectionBox">
+    <!-- MIDDLE -->
+    <div>
       <h3>Özellikler</h3>
       <ul id="perkList"></ul>
     </div>
 
-    <!-- BOTTOM LEFT: ITEMS -->
-    <div class="sectionBox">
+    <!-- BOTTOM -->
+    <div>
       <h3>Eşyalar</h3>
-      <div>Henüz boş...</div>
+      <div>Boş</div>
     </div>
   </div>
 
   <!-- CENTER -->
-  <div class="centerPanel sectionBox">
+  <div class="centerPanel">
     <h2>Oyun Alanı</h2>
-    <p>Burada dövüşler, eventler, seçimler olacak.</p>
+    <p>Buraya savaşlar, eventler ve seçimler gelecek.</p>
   </div>
 
   <!-- RIGHT -->
-  <div class="rightPanel sectionBox">
+  <div class="rightPanel">
     <h3>Log</h3>
     <div class="log" id="logBox"></div>
   </div>
 </div>
 
 <script>
-  const loginScreen = document.getElementById("loginScreen");
-  const selectScreen = document.getElementById("characterSelectScreen");
-  const gameScreen = document.getElementById("gameScreen");
+const characters = [
+  { name: "Frieren", hp: 60, mana: 120, dmg: 40, res: 30, perks: ["Büyüler güçlü"] },
+  { name: "Fern", hp: 70, mana: 110, dmg: 45, res: 35, perks: ["Mana verimi +"] },
+  { name: "Eren Yeager", hp: 120, mana: 20, dmg: 80, res: 60, perks: ["Öfke modu"] },
+  { name: "Levi Ackerman", hp: 90, mana: 30, dmg: 85, res: 50, perks: ["Kritik +"] },
+  { name: "Light Yagami", hp: 70, mana: 80, dmg: 60, res: 40, perks: ["Strateji bonusu"] },
+  { name: "The L", hp: 65, mana: 90, dmg: 50, res: 45, perks: ["Analiz bonusu"] }
+];
 
-  const startBtn = document.getElementById("startBtn");
-  const playerNameInput = document.getElementById("playerNameInput");
+const helperCharacters = [
+  "Himmel",
+  "Stark",
+  "Mikasa Ackerman",
+  "Komutan Erwin",
+  "Shinigami / Misa Misa",
+  "Light Yagami"
+];
 
-  const cardRow = document.getElementById("cardRow");
-  const rerollBtn = document.getElementById("rerollBtn");
+// Screens
+const loginScreen = document.getElementById("loginScreen");
+const selectScreen = document.getElementById("characterSelectScreen");
+const gameScreen = document.getElementById("gameScreen");
 
-  const charNameEl = document.getElementById("charName");
-  const hpBar = document.getElementById("hpBar");
-  const manaBar = document.getElementById("manaBar");
-  const dmgBar = document.getElementById("dmgBar");
-  const resBar = document.getElementById("resBar");
-  const perkList = document.getElementById("perkList");
-  const logBox = document.getElementById("logBox");
+// Inputs
+const startBtn = document.getElementById("startBtn");
+const playerNameInput = document.getElementById("playerNameInput");
+const cardRow = document.getElementById("cardRow");
+const rerollBtn = document.getElementById("rerollBtn");
 
-  let playerName = "";
-  let rerollsLeft = 1;
+// HUD
+const charNameEl = document.getElementById("charName");
+const hpBar = document.getElementById("hpBar");
+const manaBar = document.getElementById("manaBar");
+const dmgBar = document.getElementById("dmgBar");
+const resBar = document.getElementById("resBar");
 
-  const characters = [
-    {
-      name: "Frieren",
-      desc: "Aşırı yüksek mana, düşük can.",
-      hp: 60,
-      mana: 120,
-      dmg: 40,
-      res: 30,
-      perks: ["Büyüler %20 güçlü", "Mana yenilenmesi +%10"]
-    },
-    {
-      name: "Savaşçı",
-      desc: "Yüksek can, güçlü fiziksel hasar.",
-      hp: 120,
-      mana: 30,
-      dmg: 80,
-      res: 60,
-      perks: ["Fiziksel hasar +%15"]
-    },
-    {
-      name: "Hırsız",
-      desc: "Çevik ve kritik odaklı.",
-      hp: 80,
-      mana: 50,
-      dmg: 60,
-      res: 40,
-      perks: ["Kritik şans +%20"]
-    },
-    {
-      name: "Büyücü",
-      desc: "Dengeli ama mana ağırlıklı.",
-      hp: 70,
-      mana: 100,
-      dmg: 50,
-      res: 35,
-      perks: ["Alan büyüleri +%10"]
-    }
-  ];
+const hpText = document.getElementById("hpText");
+const manaText = document.getElementById("manaText");
+const dmgText = document.getElementById("dmgText");
+const resText = document.getElementById("resText");
 
-  function randomThree() {
-    const shuffled = [...characters].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 3);
+const perkList = document.getElementById("perkList");
+const logBox = document.getElementById("logBox");
+
+let playerName = "";
+let rerollsLeft = 1;
+
+function randomThree() {
+  const shuffled = [...characters].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 3);
+}
+
+function renderCards() {
+  cardRow.innerHTML = "";
+  const picks = randomThree();
+
+  picks.forEach(char => {
+    const div = document.createElement("div");
+    div.className = "charCard";
+    div.innerHTML = `
+      <div class="charName">${char.name}</div>
+      <p>HP: ${char.hp} | Mana: ${char.mana}</p>
+      <p>Hasar: ${char.dmg} | Direnç: ${char.res}</p>
+    `;
+    div.onclick = () => selectCharacter(char);
+    cardRow.appendChild(div);
+  });
+}
+
+function selectCharacter(char) {
+  charNameEl.textContent = playerName + " - " + char.name;
+
+  const max = 120; // ölçek
+  hpBar.style.width = Math.min(char.hp / max * 100, 100) + "%";
+  manaBar.style.width = Math.min(char.mana / max * 100, 100) + "%";
+  dmgBar.style.width = Math.min(char.dmg / max * 100, 100) + "%";
+  resBar.style.width = Math.min(char.res / max * 100, 100) + "%";
+
+  hpText.textContent = `${char.hp}/120`;
+  manaText.textContent = `${char.mana}/120`;
+  dmgText.textContent = `${char.dmg}/120`;
+  resText.textContent = `${char.res}/120`;
+
+  perkList.innerHTML = "";
+  char.perks.forEach(p => {
+    const li = document.createElement("li");
+    li.textContent = p;
+    perkList.appendChild(li);
+  });
+
+  logBox.innerHTML += `<div>${char.name} seçildi.</div>`;
+
+  selectScreen.classList.remove("active");
+  gameScreen.classList.add("active");
+}
+
+startBtn.onclick = () => {
+  if (!playerNameInput.value.trim()) {
+    alert("İsim gir!");
+    return;
   }
+  playerName = playerNameInput.value.trim();
+  loginScreen.classList.remove("active");
+  selectScreen.classList.add("active");
+  renderCards();
+};
 
-  function renderCards() {
-    cardRow.innerHTML = "";
-    const picks = randomThree();
-
-    picks.forEach(char => {
-      const div = document.createElement("div");
-      div.className = "charCard";
-      div.innerHTML = `
-        <div class="charName">${char.name}</div>
-        <p>${char.desc}</p>
-        <p>HP: ${char.hp} | Mana: ${char.mana}</p>
-        <p>Hasar: ${char.dmg} | Direnç: ${char.res}</p>
-      `;
-      div.onclick = () => selectCharacter(char);
-      cardRow.appendChild(div);
-    });
+rerollBtn.onclick = () => {
+  if (rerollsLeft <= 0) {
+    alert("Yenileme hakkın kalmadı!");
+    return;
   }
-
-  function selectCharacter(char) {
-    // Setup HUD
-    charNameEl.textContent = playerName + " - " + char.name;
-
-    hpBar.style.width = char.hp + "%";
-    manaBar.style.width = char.mana + "%";
-    dmgBar.style.width = char.dmg + "%";
-    resBar.style.width = char.res + "%";
-
-    perkList.innerHTML = "";
-    char.perks.forEach(p => {
-      const li = document.createElement("li");
-      li.textContent = p;
-      perkList.appendChild(li);
-    });
-
-    logBox.innerHTML += `<div>${char.name} seçildi.</div>`;
-
-    // Switch screen
-    selectScreen.classList.remove("active");
-    gameScreen.classList.add("active");
-  }
-
-  startBtn.onclick = () => {
-    if (!playerNameInput.value.trim()) {
-      alert("İsim gir!");
-      return;
-    }
-    playerName = playerNameInput.value.trim();
-    loginScreen.classList.remove("active");
-    selectScreen.classList.add("active");
-    renderCards();
-  };
-
-  rerollBtn.onclick = () => {
-    if (rerollsLeft <= 0) {
-      alert("Yenileme hakkın kalmadı!");
-      return;
-    }
-    rerollsLeft--;
-    renderCards();
-    rerollBtn.textContent = "Yenile (0 hak)";
-  };
+  rerollsLeft--;
+  renderCards();
+  rerollBtn.textContent = "Yenile (0 hak)";
+};
 </script>
 
 </body>
