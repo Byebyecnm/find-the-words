@@ -89,35 +89,24 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
     <p>Seviyeler: <b>8</b> / <b>12</b> / <b>16</b> / <b>20</b> / <b>24</b> çift. Her oyun kelimeler <b>havuzdan rastgele</b> seçilir. Doğru = +100, Yanlış = -25.</p>
 
     <div class="toolbar">
-      <label>
-        Dil:
-        <select id="langSelect">
-          <option value="en">İngilizce</option>
-          <option value="kr">Korece</option>
-        </select>
-      </label>
-      <label>
-        Seviye:
-        <select id="levelSelect">
-          <option value="0">8 Çift</option>
-          <option value="1">12 Çift</option>
-          <option value="2">16 Çift</option>
-          <option value="3">20 Çift</option>
-          <option value="4">24 Çift</option>
-        </select>
-      </label>
-      <label>
-        Süre:
-        <select id="timeSelect">
-          <option value="120">120 sn</option>
-          <option value="180">180 sn</option>
-          <option value="300">300 sn</option>
-        </select>
-      </label>
-      <button class="primary" id="startBtn">Başlat</button>
-      <button class="warn" id="resetBtn">Yeniden Başlat</button>
-      <div class="stats">
-        <div>⏱️ <strong id="timeLeft">0</strong>s</div>
+    <select id="langSel">
+      <option value="en">İngilizce</option>
+      <option value="ko">Korece</option>
+    </select>
+    <select id="pairsSel">
+      <option value="8">8 Çift</option>
+      <option value="12">12 Çift</option>
+      <option value="16">16 Çift</option>
+      <option value="20">20 Çift</option>
+      <option value="24">24 Çift</option>
+    </select>
+    <button id="startBtn" class="primary">Başlat</button>
+    <button id="hintBtn" class="ghost">Hint (-20p)</button>
+    <span class="badge">Skor: <b id="score">0</b></span>
+    <span class="badge">Süre: <b id="time">120</b></span>
+    <span class="badge">Hamle: <b id="moves">0</b></span>
+    <span class="badge">Hesap: <b id="accountScore">0</b></span>
+  </div>
         <div>⭐ <strong id="score">0</strong></div>
         <div>🎯 <strong id="matches">0</strong></div>
         <div>👣 <strong id="moves">0</strong></div>
@@ -165,141 +154,199 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
       </div>
     </div>
   </div>  <script>
-    // ===== Varsayılan Kelime Havuzları =====
-    const defaultPool = {
-      en: [ ['apple','elma'], ['book','kitap'], ['water','su'], ['sun','güneş'], ['dog','köpek'], ['house','ev'], ['travel','seyahat'], ['friend','arkadaş'], ['music','müzik'], ['money','para'], ['city','şehir'], ['food','yemek'], ['work','iş'], ['school','okul'], ['decision','karar'], ['improve','geliştirmek'], ['environment','çevre'], ['knowledge','bilgi'], ['opportunity','fırsat'], ['challenge','zorluk'], ['culture','kültür'], ['language','dil'], ['future','gelecek'], ['success','başarı'], ['time','zaman'], ['day','gün'], ['night','gece'], ['family','aile'], ['love','sevgi'], ['game','oyun'], ['learn','öğrenmek'], ['write','yazmak'], ['read','okumak'] ],
-      kr: [ ['사과','elma'], ['책','kitap'], ['물','su'], ['해','güneş'], ['개','köpek'], ['집','ev'], ['여행','seyahat'], ['친구','arkadaş'], ['음악','müzik'], ['돈','para'], ['도시','şehir'], ['음식','yemek'], ['일','iş'], ['학교','okul'], ['결정','karar'], ['개선하다','geliştirmek'], ['환경','çevre'], ['지식','bilgi'], ['기회','fırsat'], ['도전','zorluk'], ['문화','kültür'], ['언어','dil'], ['미래','gelecek'], ['성공','başarı'], ['시간','zaman'], ['낮','gün'], ['밤','gece'], ['가족','aile'], ['사랑','sevgi'], ['게임','oyun'], ['배우다','öğrenmek'], ['쓰다','yazmak'], ['읽다','okumak'] ]
-    };
-    const levelPairs = [8, 12, 16, 20, 24];
+  // ====== State ======
+  let playerName = localStorage.getItem('playerName') || '';
+  let totalAccountScore = Number(localStorage.getItem('accountScore')||0);
+  let currentLang = 'en';
+  let pairs = 8;
+  let timeLeft = 120;
+  let timer = null;
+  let first = null;
+  let lock = false;
+  let moves = 0;
+  let score = 0;
+  let streak = 0; // hatasız seri
+  let mistakeStreak = 0; // arka arkaya hata
+  let hintActiveIndex = null;
 
-    // ===== LocalStorage Keys =====
-    const NAME_KEY = 'mahjong_player_name_v2';
-    const BEST_KEY = 'mahjong_best_v4';
-    const CUSTOM_KEY = 'mahjong_custom_words_v1';
+  const board = document.getElementById('board');
+  const scoreEl = document.getElementById('score');
+  const timeEl = document.getElementById('time');
+  const movesEl = document.getElementById('moves');
+  const accountEl = document.getElementById('accountScore');
 
-    // ===== DOM =====
-    const langSelect = document.getElementById('langSelect');
-    const levelSelect = document.getElementById('levelSelect');
-    const timeSelect = document.getElementById('timeSelect');
-    const boardEl = document.getElementById('board');
-    const startBtn = document.getElementById('startBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const movesEl = document.getElementById('moves');
-    const matchesEl = document.getElementById('matches');
-    const scoreEl = document.getElementById('score');
-    const timeLeftEl = document.getElementById('timeLeft');
-    const statusEl = document.getElementById('status');
-    const bestBody = document.getElementById('bestBody');
-    const playerNameLabel = document.getElementById('playerNameLabel');
-    const changeNameBtn = document.getElementById('changeNameBtn');
-    const manageWordsBtn = document.getElementById('manageWordsBtn');
+  // ====== Utils ======
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+  function nearSquareCols(n){ const c = Math.ceil(Math.sqrt(n)); return c; }
+  function setGrid(n){ const cols = nearSquareCols(n); board.style.gridTemplateColumns = `repeat(${cols}, minmax(80px, 1fr))`; }
 
-    // Modals
-    const nameModal = document.getElementById('nameModal');
-    const nameInput = document.getElementById('nameInput');
-    const nameSave = document.getElementById('nameSave');
-    const nameCancel = document.getElementById('nameCancel');
+  // ====== Words ======
+  const baseWords = {
+    en: [ ['apple','elma'],['book','kitap'],['car','araba'],['dog','köpek'],['water','su'],['house','ev'],['sun','güneş'],['moon','ay'],['tree','ağaç'],['road','yol'],['food','yemek'],['friend','arkadaş'],['music','müzik'],['city','şehir'],['school','okul'],['work','iş'],['time','zaman'],['money','para'],['game','oyun'],['love','sevgi'],['family','aile'],['world','dünya'],['night','gece'],['day','gün'] ],
+    ko: [ ['사과','elma'],['책','kitap'],['차','araba'],['개','köpek'],['물','su'],['집','ev'],['해','güneş'],['달','ay'],['나무','ağaç'],['길','yol'],['음식','yemek'],['친구','arkadaş'],['음악','müzik'],['도시','şehir'],['학교','okul'],['일','iş'],['시간','zaman'],['돈','para'],['게임','oyun'],['사랑','sevgi'],['가족','aile'],['세계','dünya'],['밤','gece'],['낮','gün'] ]
+  };
 
-    const wordsModal = document.getElementById('wordsModal');
-    const wordLangSelect = document.getElementById('wordLangSelect');
-    const wordA = document.getElementById('wordA');
-    const wordB = document.getElementById('wordB');
-    const addWordBtn = document.getElementById('addWordBtn');
-    const clearCustomBtn = document.getElementById('clearCustomBtn');
-    const wordList = document.getElementById('wordList');
-    const wordsClose = document.getElementById('wordsClose');
+  function getPool(){
+    const custom = JSON.parse(localStorage.getItem('customWords')||'{}');
+    const arr = (baseWords[currentLang]||[]).concat(custom[currentLang]||[]);
+    return arr;
+  }
 
-    // ===== Oyun Durumu =====
-    let first = null, second = null, lock = false;
-    let moves = 0, matches = 0, totalPairs = 0, score = 0;
-    let timer = null, timeLeft = 0, gameActive = false;
+  // ====== Build ======
+  function startGame(){
+    clearInterval(timer);
+    first = null; lock = false; moves = 0; score = 0; streak = 0; mistakeStreak = 0; hintActiveIndex = null;
+    timeLeft = 120;
+    movesEl.textContent = moves;
+    scoreEl.textContent = score;
+    timeEl.textContent = timeLeft;
+    accountEl.textContent = totalAccountScore;
 
-    // ===== Yardımcılar =====
-    function shuffle(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
+    const pool = getPool();
+    if(pool.length < pairs){ alert('Yeterli kelime yok. Kelimeleri Yönet kısmından ekleyebilirsin.'); return; }
 
-    function getCustom(){ try{ return JSON.parse(localStorage.getItem(CUSTOM_KEY) || '{"en":[],"kr":[]}'); } catch{ return {en:[], kr:[]}; } }
-    function setCustom(obj){ localStorage.setItem(CUSTOM_KEY, JSON.stringify(obj)); }
+    const chosen = shuffle(pool.slice()).slice(0, pairs);
+    let tiles = [];
+    chosen.forEach((w,i)=>{
+      tiles.push({ key:i, text:w[0] });
+      tiles.push({ key:i, text:w[1] });
+    });
+    tiles = shuffle(tiles);
 
-    function getPool(lang){ const custom = getCustom(); return defaultPool[lang].concat(custom[lang] || []); }
+    board.innerHTML='';
+    setGrid(tiles.length);
+    tiles.forEach((t,idx)=>{
+      const d = document.createElement('div');
+      d.className = 'tile hidden';
+      d.dataset.key = t.key;
+      d.dataset.index = idx;
+      d.textContent = t.text;
+      d.onclick = ()=>onPick(d);
+      board.appendChild(d);
+    });
 
-    function samplePairs(lang, needed) {
-      const base = getPool(lang).slice();
-      shuffle(base);
-      const picked = base.slice(0, needed);
-      return picked;
+    timer = setInterval(()=>{
+      timeLeft--; timeEl.textContent = timeLeft;
+      if(timeLeft<=0){ endGame(); }
+    },1000);
+  }
+
+  // ====== Scoring Rules ======
+  function applyMatch(){
+    // Doğru bulma: 15p, seri varsa 30p
+    if(streak>=1){ score += 30; }
+    else{ score += 15; }
+    streak++;
+    mistakeStreak = 0;
+  }
+  function applyMistake(){
+    // Hata: 5p, art arda hata: 10p
+    if(mistakeStreak>=1){ score -= 10; }
+    else{ score -= 5; }
+    mistakeStreak++;
+    streak = 0;
+  }
+
+  // ====== Hint ======
+  function useHint(){
+    if(score < 20){ alert('Hint için en az 20 puan gerekir.'); return; }
+    if(hintActiveIndex !== null){ alert('Zaten bir hint açık.'); return; }
+    score -= 20; scoreEl.textContent = score;
+    const tiles = [...document.querySelectorAll('.tile')].filter(t=>!t.classList.contains('matched'));
+    if(tiles.length===0) return;
+    const pick = tiles[Math.floor(Math.random()*tiles.length)];
+    hintActiveIndex = pick.dataset.index;
+    pick.classList.remove('hidden'); pick.classList.add('revealed');
+    setTimeout(()=>{
+      if(hintActiveIndex !== null){ pick.classList.add('hidden'); pick.classList.remove('revealed'); hintActiveIndex = null; }
+    }, 1500);
+  }
+
+  // ====== Gameplay ======
+  function onPick(el){
+    if(lock || el.classList.contains('matched') || el === first) return;
+    el.classList.remove('hidden'); el.classList.add('revealed');
+
+    if(first===null){ first = el; return; }
+
+    moves++; movesEl.textContent = moves;
+    const second = el;
+
+    if(first.dataset.key === second.dataset.key){
+      // match
+      first.classList.add('matched'); second.classList.add('matched');
+      first.classList.remove('revealed'); second.classList.remove('revealed');
+      applyMatch();
+
+      // Eğer hint ile açılan taş eşleştiyse +10
+      if(hintActiveIndex !== null && (first.dataset.index===hintActiveIndex || second.dataset.index===hintActiveIndex)){
+        score += 10;
+        hintActiveIndex = null;
+      }
+
+      scoreEl.textContent = score;
+      first = null;
+      checkWin();
+    } else {
+      // mistake
+      applyMistake();
+      scoreEl.textContent = score;
+      lock = true;
+      setTimeout(()=>{
+        first.classList.add('hidden'); second.classList.add('hidden');
+        first.classList.remove('revealed'); second.classList.remove('revealed');
+        first = null; lock = false;
+      }, 700);
     }
+  }
 
-    // ===== İsim =====
-    function openNameModal(){ const current = localStorage.getItem(NAME_KEY) || ''; nameInput.value = current; nameModal.style.display='flex'; nameInput.focus(); }
-    function closeNameModal(){ nameModal.style.display='none'; }
-    function saveName(){ const name = (nameInput.value || '').trim() || 'Misafir'; localStorage.setItem(NAME_KEY, name); playerNameLabel.textContent = name; closeNameModal(); }
-    changeNameBtn.addEventListener('click', openNameModal);
-    nameSave.addEventListener('click', saveName);
-    nameCancel.addEventListener('click', closeNameModal);
+  function checkWin(){
+    const left = document.querySelectorAll('.tile:not(.matched)').length;
+    if(left===0){ endGame(true); }
+  }
 
-    function ensureName(){ let name = localStorage.getItem(NAME_KEY); if(!name){ openNameModal(); } else { playerNameLabel.textContent = name; } }
+  function endGame(win=false){
+    clearInterval(timer);
+    totalAccountScore += Math.max(0, score);
+    localStorage.setItem('accountScore', String(totalAccountScore));
+    accountEl.textContent = totalAccountScore;
+    saveScore(win);
+    alert(win ? 'Tebrikler! Oyun bitti.' : 'Süre doldu!');
+  }
 
-    // ===== Kelime Yönetimi =====
-    function openWordsModal(){ wordsModal.style.display='flex'; renderWordList(); }
-    function closeWordsModal(){ wordsModal.style.display='none'; }
-    manageWordsBtn.addEventListener('click', openWordsModal);
-    wordsClose.addEventListener('click', closeWordsModal);
+  // ====== Leaderboard ======
+  function saveScore(win){
+    const list = JSON.parse(localStorage.getItem('scores')||'[]');
+    list.push({ name: playerName||'Oyuncu', lang: currentLang, pairs, time: timeLeft, moves, score });
+    // Adil sıralama: skor desc, süre asc, hamle asc
+    list.sort((a,b)=> (b.score-a.score) || (a.time-b.time) || (a.moves-b.moves));
+    localStorage.setItem('scores', JSON.stringify(list));
+    renderBoard();
+  }
 
-    function renderWordList(){ const lang = wordLangSelect.value; const custom = getCustom(); const list = custom[lang] || []; wordList.innerHTML=''; if(list.length===0){ wordList.innerHTML = '<div style="color:#94a3b8; font-size:13px;">Henüz özel kelime yok.</div>'; return; }
-      list.forEach((p, i)=>{ const div=document.createElement('div'); div.className='word-item'; div.innerHTML = `<div><strong>${p[0]}</strong> <small>→</small> ${p[1]}</div><button data-i="${i}" class="warn">Sil</button>`; div.querySelector('button').addEventListener('click', ()=>{ const c=getCustom(); c[lang].splice(i,1); setCustom(c); renderWordList(); }); wordList.appendChild(div); }); }
+  function renderBoard(){
+    const list = JSON.parse(localStorage.getItem('scores')||'[]');
+    const tbody = document.getElementById('bestBody');
+    if(!tbody) return;
+    tbody.innerHTML='';
+    list.slice(0,20).forEach((r,i)=>{
+      const tr = document.createElement('tr');
+      tr.className = 'best-row' + (i===0?' first':'');
+      tr.innerHTML = `<td>${i+1}</td><td>${r.name}</td><td>${r.lang}</td><td>${r.pairs}</td><td>${r.time}</td><td>${r.score}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
 
-    wordLangSelect.addEventListener('change', renderWordList);
+  // ====== UI Hooks ======
+  document.getElementById('startBtn').onclick = ()=>{
+    currentLang = document.getElementById('langSel').value;
+    pairs = Number(document.getElementById('pairsSel').value);
+    startGame();
+  };
+  document.getElementById('hintBtn').onclick = useHint;
 
-    addWordBtn.addEventListener('click', ()=>{ const a = wordA.value.trim(); const b = wordB.value.trim(); if(!a || !b) return; const lang = wordLangSelect.value; const c = getCustom(); c[lang] = c[lang] || []; c[lang].push([a,b]); setCustom(c); wordA.value=''; wordB.value=''; renderWordList(); });
-
-    clearCustomBtn.addEventListener('click', ()=>{ if(!confirm('Özel kelimeler silinsin mi?')) return; setCustom({en:[], kr:[]}); renderWordList(); });
-
-    // ===== Zaman =====
-    function startTimer(){ clearInterval(timer); timer = setInterval(()=>{ if(!gameActive) return; timeLeft--; timeLeftEl.textContent = timeLeft; if(timeLeft<=0){ endGame(false); } }, 1000); }
-
-    // ===== Oyun Kurulumu =====
-    function setupBoard(){ const lang = langSelect.value; const lvl = Number(levelSelect.value); const neededPairs = levelPairs[lvl]; const poolNow = getPool(lang); if(poolNow.length < neededPairs){ alert('Kelime havuzunda yeterli kelime yok! Lütfen kelime ekleyin.'); return; }
-      const pairs = samplePairs(lang, neededPairs);
-      const tiles = []; pairs.forEach(([a,b], idx)=>{ tiles.push({id:idx, text:a}); tiles.push({id:idx, text:b}); });
-      totalPairs = pairs.length; moves=0; matches=0; score=0; movesEl.textContent=moves; matchesEl.textContent=matches; scoreEl.textContent=score; statusEl.textContent='';
-      boardEl.innerHTML=''; first=null; second=null; lock=false;
-      const shuffled = shuffle(tiles); boardEl.className='board grid';
-      shuffled.forEach(tile=>{ const div=document.createElement('div'); div.className='tile hidden'; div.dataset.id=tile.id; div.dataset.text=tile.text; div.textContent=tile.text; div.addEventListener('click', ()=>onTileClick(div)); boardEl.appendChild(div); }); }
-
-    function startGame(){ setupBoard(); timeLeft = Number(timeSelect.value); timeLeftEl.textContent = timeLeft; gameActive=true; lock=false; startTimer(); }
-
-    function onTileClick(tile){ if(!gameActive || lock) return; if(tile.classList.contains('matched') || tile===first) return; tile.classList.remove('hidden'); tile.classList.add('revealed'); if(!first){ first=tile; return; }
-      second=tile; lock=true; moves++; movesEl.textContent=moves; const isMatch = first.dataset.id===second.dataset.id && first.dataset.text!==second.dataset.text;
-      if(isMatch){ setTimeout(()=>{ first.classList.remove('revealed'); second.classList.remove('revealed'); first.classList.add('matched'); second.classList.add('matched'); matches++; matchesEl.textContent=matches; score+=100; scoreEl.textContent=score; resetPick(); if(matches===totalPairs){ endGame(true); } }, 200); }
-      else{ setTimeout(()=>{ first.classList.add('hidden'); second.classList.add('hidden'); first.classList.remove('revealed'); second.classList.remove('revealed'); score=Math.max(0, score-25); scoreEl.textContent=score; resetPick(); }, 450); }
-    }
-    function resetPick(){ first=null; second=null; lock=false; }
-
-    // ===== En İyiler (Adil Sıralama) =====
-    // Kural: 1) Puan (yüksek daha iyi)
-    //        2) Kalan süre (yüksek daha iyi)
-    //        3) Hamle (düşük daha iyi)
-    function loadBest(){ try{ return JSON.parse(localStorage.getItem(BEST_KEY) || '[]'); } catch{ return []; } }
-    function saveBest(entry){ const list = loadBest(); list.push(entry);
-      list.sort((a,b)=>{
-        if(b.score !== a.score) return b.score - a.score;               // 1) Puan
-        if(b.timeLeft !== a.timeLeft) return b.timeLeft - a.timeLeft;   // 2) Kalan süre
-        if(a.moves !== b.moves) return a.moves - b.moves;               // 3) Hamle
-        return 0;
-      });
-      const trimmed = list.slice(0, 10);
-      localStorage.setItem(BEST_KEY, JSON.stringify(trimmed));
-    }
-    function renderBest(){ const list = loadBest(); bestBody.innerHTML=''; if(list.length===0){ const tr=document.createElement('tr'); tr.className='best-row'; tr.innerHTML='<td colspan="6">Henüz kayıt yok</td>'; bestBody.appendChild(tr); return; }
-      list.forEach((e,i)=>{ const tr=document.createElement('tr'); tr.className='best-row' + (i===0?' first':''); const lvlText = levelPairs[e.lvl] + 'Ç'; const langText = e.lang==='kr'?'KR':'EN'; tr.innerHTML = `<td>${i+1}</td><td>${e.name}</td><td>${langText}</td><td>${lvlText}</td><td>${e.used}s</td><td><strong>${e.score}</strong></td>`; bestBody.appendChild(tr); }); }
-
-    function endGame(won){ gameActive=false; clearInterval(timer); lock=true; const name = localStorage.getItem(NAME_KEY) || 'Misafir'; const lang=langSelect.value; const lvl=Number(levelSelect.value); const totalTime=Number(timeSelect.value); const used = totalTime - Math.max(0, timeLeft);
-      statusEl.innerHTML = won ? `<span class="success">Kazandın! Skor: ${score}</span>` : `<span class="danger">Süre Doldu ⏰ Skor: ${score}</span>`;
-      saveBest({ date:new Date().toISOString(), name, lang, lvl, used, timeLeft, moves, score }); renderBest(); }
-
-    startBtn.addEventListener('click', startGame); resetBtn.addEventListener('click', startGame);
-
-    // İlk açılış
-    ensureName(); renderBest(); timeLeftEl.textContent = timeSelect.value;
-  </script></body>
+  // Init
+  renderBoard();
+  accountEl.textContent = totalAccountScore;
+</script></body>
 </html>
