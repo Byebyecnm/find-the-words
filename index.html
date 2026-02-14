@@ -2,64 +2,101 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Kelimeli Mahjong - Gerçek Mahjong Mekaniği</title>
   <style>
-    * { box-sizing: border-box; }
+    * { 
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
     body { 
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
       background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
       color: #e5e7eb; 
       margin: 0; 
-      padding: 20px; 
+      padding: 12px; 
       min-height: 100vh;
+      overflow-x: hidden;
+      touch-action: manipulation;
     }
     
-    .container { max-width: 1400px; margin: 0 auto; }
+    .container { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      width: 100%;
+    }
     
     h1 { 
       text-align: center; 
-      margin: 0 0 20px; 
-      font-size: 2.5em;
+      margin: 0 0 16px; 
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
       background: linear-gradient(135deg, #3b82f6, #8b5cf6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      line-height: 1.2;
     }
     
     .layout { 
       display: grid; 
-      grid-template-columns: 280px 1fr 280px; 
-      gap: 20px; 
+      grid-template-columns: 1fr; 
+      gap: 16px; 
       align-items: start;
     }
     
-    @media (max-width: 1200px) { 
-      .layout { grid-template-columns: 1fr; } 
-      .sidebar { max-width: 500px; margin: 0 auto; }
+    @media (min-width: 1200px) { 
+      .layout { 
+        grid-template-columns: 280px 1fr 280px; 
+        gap: 20px;
+      }
+      body { padding: 20px; }
     }
     
     .panel { 
       background: rgba(15, 23, 42, 0.8); 
       border: 1px solid #334155; 
       border-radius: 16px; 
-      padding: 20px; 
+      padding: 16px; 
       backdrop-filter: blur(10px);
     }
     
     .panel h3 { 
-      margin: 0 0 16px; 
-      font-size: 1.3em;
+      margin: 0 0 12px; 
+      font-size: clamp(1.1rem, 4vw, 1.3rem);
       display: flex;
       align-items: center;
       gap: 8px;
     }
     
     /* Kontroller */
-    .controls { display: flex; flex-direction: column; gap: 12px; }
-    .control-group { display: flex; flex-direction: column; gap: 6px; }
+    .controls { 
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px; 
+    }
+    
+    @media (min-width: 768px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .control-group { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 6px; 
+    }
+    
+    .control-group.full-width {
+      grid-column: 1 / -1;
+    }
+    
     .control-group label { 
-      font-size: 0.85em; 
+      font-size: 0.75rem; 
       color: #94a3b8; 
       font-weight: 600;
       text-transform: uppercase;
@@ -71,20 +108,40 @@
       color: #e5e7eb; 
       border: 1px solid #475569; 
       border-radius: 10px; 
-      padding: 12px 16px; 
-      font-size: 1em;
+      padding: 14px 16px; 
+      font-size: 1rem;
       width: 100%;
       transition: all 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+    }
+    
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23e5e7eb' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
     }
     
     select:hover, input:hover { border-color: #64748b; }
+    select:focus, input:focus { 
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
     
     button { 
       cursor: pointer; 
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      font-size: 0.9rem;
+      padding: 16px;
+      touch-action: manipulation;
     }
+    
+    button:active { transform: scale(0.98); }
     
     button:hover:not(:disabled) { 
       transform: translateY(-2px); 
@@ -118,21 +175,27 @@
     /* İstatistikler */
     .stats { 
       display: grid; 
-      grid-template-columns: 1fr 1fr; 
-      gap: 12px; 
-      margin-top: 16px;
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 8px; 
+      margin-top: 12px;
+    }
+    
+    @media (min-width: 768px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
     
     .stat-box { 
       background: #0f172a; 
       border: 1px solid #334155; 
       border-radius: 12px; 
-      padding: 12px; 
+      padding: 12px 8px; 
       text-align: center;
     }
     
     .stat-label { 
-      font-size: 0.75em; 
+      font-size: 0.7rem; 
       color: #94a3b8; 
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -140,32 +203,40 @@
     }
     
     .stat-value { 
-      font-size: 1.8em; 
+      font-size: clamp(1.3rem, 4vw, 1.8rem); 
       font-weight: 700;
       background: linear-gradient(135deg, #3b82f6, #8b5cf6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      line-height: 1;
     }
     
     /* Skorlar */
     .score-list { 
       max-height: 400px; 
       overflow-y: auto; 
+      -webkit-overflow-scrolling: touch;
     }
     
     .score-item { 
       background: #0f172a; 
       border: 1px solid #334155; 
       border-radius: 10px; 
-      padding: 12px; 
+      padding: 10px; 
       margin-bottom: 8px;
       transition: all 0.2s;
     }
     
-    .score-item:hover { 
-      border-color: #3b82f6; 
-      transform: translateX(4px);
+    .score-item:active { 
+      transform: translateX(2px);
+    }
+    
+    @media (hover: hover) {
+      .score-item:hover { 
+        border-color: #3b82f6; 
+        transform: translateX(4px);
+      }
     }
     
     .score-item.top { 
@@ -178,46 +249,61 @@
       justify-content: space-between; 
       align-items: center;
       margin-bottom: 6px;
+      gap: 8px;
     }
     
     .score-name { 
       font-weight: 700; 
-      font-size: 1.1em;
+      font-size: clamp(0.95rem, 3vw, 1.1rem);
       color: #3b82f6;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
     }
     
     .score-points { 
-      font-size: 1.3em; 
+      font-size: clamp(1.1rem, 4vw, 1.3rem); 
       font-weight: 700;
       color: #22c55e;
+      white-space: nowrap;
     }
     
     .score-details { 
-      font-size: 0.85em; 
+      font-size: 0.75rem; 
       color: #94a3b8; 
       display: flex;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
+    }
+    
+    .score-details span {
+      white-space: nowrap;
     }
     
     /* Oyun Tahtası */
     .board-container { 
       position: relative; 
-      min-height: 500px;
+      min-height: 400px;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 20px 10px;
+      -webkit-overflow-scrolling: touch;
     }
     
     .board { 
       position: relative;
       display: inline-block;
+      transform-origin: center center;
     }
     
     .tile { 
       position: absolute;
-      width: 80px;
-      height: 100px;
+      width: 60px;
+      height: 75px;
       background: linear-gradient(145deg, #f8fafc, #e2e8f0);
       border: 2px solid #cbd5e1;
       border-radius: 8px;
@@ -226,7 +312,7 @@
       justify-content: center;
       text-align: center;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 11px;
       color: #0f172a;
       cursor: pointer;
       user-select: none;
@@ -234,9 +320,29 @@
       box-shadow: 
         0 2px 4px rgba(0,0,0,0.1),
         inset 0 1px 0 rgba(255,255,255,0.5);
-      padding: 8px;
+      padding: 6px;
       word-wrap: break-word;
       line-height: 1.2;
+      touch-action: manipulation;
+    }
+    
+    @media (min-width: 768px) {
+      .tile {
+        width: 80px;
+        height: 100px;
+        font-size: 14px;
+        padding: 8px;
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .board-container {
+        min-height: 500px;
+      }
+    }
+    
+    .tile:active:not(.matched):not(.blocked) { 
+      transform: scale(0.95); 
     }
     
     .tile:hover:not(.matched):not(.blocked) { 
@@ -246,6 +352,12 @@
         0 8px 16px rgba(59, 130, 246, 0.3),
         inset 0 1px 0 rgba(255,255,255,0.5);
       z-index: 10000 !important;
+    }
+    
+    @media (hover: none) {
+      .tile:hover:not(.matched):not(.blocked) { 
+        transform: none;
+      }
     }
     
     .tile.selected { 
@@ -280,10 +392,11 @@
     /* Durum mesajları */
     .status { 
       text-align: center; 
-      margin-top: 20px; 
-      font-size: 1.2em;
+      margin-top: 16px; 
+      font-size: clamp(1rem, 3vw, 1.2rem);
       font-weight: 600;
       min-height: 30px;
+      padding: 0 12px;
     }
     
     .success { color: #22c55e; }
@@ -296,15 +409,16 @@
       border: 1px solid #3b82f6; 
       border-radius: 10px; 
       padding: 12px; 
-      font-size: 0.9em;
+      font-size: 0.85rem;
       line-height: 1.6;
-      margin-top: 16px;
+      margin-top: 12px;
     }
     
     .help-title { 
       font-weight: 700; 
       color: #3b82f6; 
       margin-bottom: 8px;
+      font-size: 0.9rem;
     }
     
     .badge {
@@ -313,9 +427,10 @@
       border: 1px solid #334155;
       border-radius: 6px;
       padding: 4px 8px;
-      font-size: 0.75em;
+      font-size: 0.7rem;
       font-weight: 600;
       margin: 2px;
+      white-space: nowrap;
     }
     
     .name-display {
@@ -326,13 +441,17 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
     
     .player-name {
       font-weight: 700;
       color: #3b82f6;
-      font-size: 1.1em;
+      font-size: clamp(0.95rem, 3vw, 1.1rem);
+      flex: 1;
+      min-width: 100px;
     }
     
     /* Modal (İsim Giriş Ekranı) */
@@ -349,6 +468,7 @@
       z-index: 10000;
       backdrop-filter: blur(8px);
       animation: fadeIn 0.3s ease;
+      padding: 20px;
     }
     
     @keyframes fadeIn {
@@ -360,11 +480,19 @@
       background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
       border: 2px solid #3b82f6;
       border-radius: 24px;
-      padding: 40px;
+      padding: 24px;
       max-width: 500px;
-      width: 90%;
+      width: 100%;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
       animation: slideUp 0.4s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    @media (min-width: 768px) {
+      .modal-content {
+        padding: 40px;
+      }
     }
     
     @keyframes slideUp {
@@ -380,26 +508,27 @@
     
     .modal-header {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 24px;
     }
     
     .modal-title {
-      font-size: 2.5em;
+      font-size: clamp(1.8rem, 6vw, 2.5rem);
       margin: 0 0 10px;
       background: linear-gradient(135deg, #3b82f6, #8b5cf6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      line-height: 1.2;
     }
     
     .modal-subtitle {
       color: #94a3b8;
-      font-size: 1.1em;
+      font-size: clamp(0.95rem, 3vw, 1.1rem);
       margin: 0;
     }
     
     .modal-body {
-      margin-bottom: 30px;
+      margin-bottom: 24px;
     }
     
     .input-group {
@@ -409,7 +538,7 @@
     .input-label {
       display: block;
       color: #94a3b8;
-      font-size: 0.9em;
+      font-size: 0.85rem;
       font-weight: 600;
       margin-bottom: 8px;
       text-transform: uppercase;
@@ -423,7 +552,7 @@
       border-radius: 12px;
       padding: 16px;
       color: #e5e7eb;
-      font-size: 1.2em;
+      font-size: clamp(1rem, 3vw, 1.2rem);
       font-weight: 600;
       text-align: center;
       transition: all 0.3s;
@@ -442,29 +571,32 @@
       border-radius: 12px;
       padding: 16px;
       color: white;
-      font-size: 1.2em;
+      font-size: clamp(1rem, 3vw, 1.2rem);
       font-weight: 700;
       cursor: pointer;
       transition: all 0.3s;
       text-transform: uppercase;
       letter-spacing: 1px;
-    }
-    
-    .modal-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+      touch-action: manipulation;
     }
     
     .modal-button:active {
-      transform: translateY(0);
+      transform: scale(0.98);
+    }
+    
+    @media (hover: hover) {
+      .modal-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+      }
     }
     
     .welcome-icons {
       display: flex;
       justify-content: center;
-      gap: 20px;
-      font-size: 2em;
-      margin-bottom: 20px;
+      gap: 16px;
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      margin-bottom: 16px;
       animation: bounce 1s ease infinite;
     }
     
@@ -522,6 +654,7 @@
             <label>Dil</label>
             <select id="langSelect">
               <option value="en">🇬🇧 İngilizce</option>
+              <option value="es">🇪🇸 İspanyolca</option>
               <option value="kr">🇰🇷 Korece</option>
             </select>
           </div>
@@ -529,25 +662,37 @@
           <div class="control-group">
             <label>Seviye</label>
             <select id="levelSelect">
-              <option value="easy">Kolay (18 çift)</option>
-              <option value="medium">Orta (36 çift)</option>
-              <option value="hard">Zor (72 çift)</option>
+              <option value="a1">A1</option>
+              <option value="a2">A2</option>
+              <option value="b1">B1</option>
+              <option value="b2">B2</option>
+              <option value="c1">C1</option>
+              <option value="c2">C2</option>
+            </select>
+          </div>
+          
+          <div class="control-group">
+            <label>Taş</label>
+            <select id="tilesSelect">
+              <option value="easy">36</option>
+              <option value="medium">72</option>
+              <option value="hard">144</option>
             </select>
           </div>
           
           <div class="control-group">
             <label>Süre</label>
             <select id="timeSelect">
-              <option value="180">3 Dakika</option>
-              <option value="300">5 Dakika</option>
-              <option value="600">10 Dakika</option>
-              <option value="0">Sınırsız</option>
+              <option value="180">3dk</option>
+              <option value="300">5dk</option>
+              <option value="600">10dk</option>
+              <option value="0">∞</option>
             </select>
           </div>
           
-          <button class="primary" id="startBtn">🎮 Oyunu Başlat</button>
-          <button class="secondary" id="hintBtn" disabled>💡 İpucu</button>
-          <button class="warn" id="resetBtn" disabled>🔄 Yeniden Başlat</button>
+          <button class="primary full-width" id="startBtn">🎮 Başlat</button>
+          <button class="secondary" id="hintBtn" disabled>💡</button>
+          <button class="warn" id="resetBtn" disabled>🔄</button>
         </div>
         
         <div class="stats">
@@ -571,12 +716,12 @@
         
         <div class="help">
           <div class="help-title">📖 Nasıl Oynanır?</div>
-          Sadece <strong>açık</strong> (üzerinde taş olmayan) ve <strong>yan kenarları boş</strong> taşlar seçilebilir. 
-          <strong>Yabancı kelime ile Türkçe anlamını</strong> eşleştirin! (Örn: apple - elma)
+          Sadece <strong>açık</strong> ve <strong>yan kenarları boş</strong> taşlar seçilebilir. 
+          <strong>Yabancı → Türkçe</strong> eşleştir!
           <div style="margin-top:8px">
-            <span class="badge">✓ Doğru: +100</span>
-            <span class="badge">✗ Yanlış: -25</span>
-            <span class="badge">💡 İpucu: -50</span>
+            <span class="badge">✓ +100</span>
+            <span class="badge">✗ -25</span>
+            <span class="badge">💡 -50</span>
           </div>
         </div>
       </aside>
@@ -603,60 +748,311 @@
   </div>
 
   <script>
-    // ===== KELİME HAVUZU (Yabancı-Türkçe Çiftler) =====
+    // ===== KELİME HAVUZU (CEFR Seviyelerine Göre) =====
     const wordPairs = {
-      en: [
-        ['apple', 'elma'], ['book', 'kitap'], ['water', 'su'], ['sun', 'güneş'], ['dog', 'köpek'],
-        ['house', 'ev'], ['travel', 'seyahat'], ['friend', 'arkadaş'], ['music', 'müzik'], ['money', 'para'],
-        ['city', 'şehir'], ['food', 'yemek'], ['work', 'iş'], ['school', 'okul'], ['time', 'zaman'],
-        ['day', 'gün'], ['night', 'gece'], ['family', 'aile'], ['love', 'sevgi'], ['game', 'oyun'],
-        ['learn', 'öğrenmek'], ['write', 'yazmak'], ['read', 'okumak'], ['think', 'düşünmek'], ['speak', 'konuşmak'],
-        ['listen', 'dinlemek'], ['walk', 'yürümek'], ['run', 'koşmak'], ['jump', 'atlamak'], ['sleep', 'uyumak'],
-        ['dream', 'rüya'], ['hope', 'umut'], ['peace', 'barış'], ['truth', 'gerçek'], ['light', 'ışık'],
-        ['dark', 'karanlık'], ['fire', 'ateş'], ['earth', 'toprak'], ['wind', 'rüzgar'], ['rain', 'yağmur'],
-        ['snow', 'kar'], ['cloud', 'bulut'], ['star', 'yıldız'], ['moon', 'ay'], ['tree', 'ağaç'],
-        ['flower', 'çiçek'], ['bird', 'kuş'], ['fish', 'balık'], ['cat', 'kedi'], ['horse', 'at'],
-        ['river', 'nehir'], ['ocean', 'okyanus'], ['mountain', 'dağ'], ['forest', 'orman'], ['desert', 'çöl'],
-        ['island', 'ada'], ['bridge', 'köprü'], ['road', 'yol'], ['car', 'araba'], ['train', 'tren'],
-        ['plane', 'uçak'], ['ship', 'gemi'], ['bike', 'bisiklet'], ['phone', 'telefon'], ['computer', 'bilgisayar'],
-        ['camera', 'kamera'], ['watch', 'saat'], ['key', 'anahtar'], ['door', 'kapı'], ['window', 'pencere'],
-        ['chair', 'sandalye'], ['table', 'masa'], ['bed', 'yatak'], ['lamp', 'lamba'], ['mirror', 'ayna'],
-        ['picture', 'resim'], ['pen', 'kalem'], ['paper', 'kağıt'], ['letter', 'mektup'], ['story', 'hikaye'],
-        ['song', 'şarkı'], ['dance', 'dans'], ['paint', 'boya'], ['draw', 'çizmek'], ['play', 'oynamak'],
-        ['teach', 'öğretmek'], ['help', 'yardım'], ['smile', 'gülümseme'], ['laugh', 'gülmek'], ['cry', 'ağlamak'],
-        ['happy', 'mutlu'], ['sad', 'üzgün'], ['angry', 'kızgın'], ['calm', 'sakin'], ['brave', 'cesur'],
-        ['strong', 'güçlü'], ['smart', 'akıllı'], ['kind', 'nazik'], ['good', 'iyi'], ['bad', 'kötü'],
-        ['big', 'büyük'], ['small', 'küçük'], ['fast', 'hızlı'], ['slow', 'yavaş'], ['hot', 'sıcak'],
-        ['cold', 'soğuk'], ['new', 'yeni'], ['old', 'eski'], ['young', 'genç'], ['free', 'özgür'],
-        ['beautiful', 'güzel'], ['ugly', 'çirkin'], ['clean', 'temiz'], ['dirty', 'kirli'], ['rich', 'zengin'],
-        ['poor', 'fakir'], ['easy', 'kolay'], ['hard', 'zor'], ['simple', 'basit'], ['difficult', 'zor']
-      ],
-      kr: [
-        ['사과', 'elma'], ['책', 'kitap'], ['물', 'su'], ['해', 'güneş'], ['개', 'köpek'],
-        ['집', 'ev'], ['여행', 'seyahat'], ['친구', 'arkadaş'], ['음악', 'müzik'], ['돈', 'para'],
-        ['도시', 'şehir'], ['음식', 'yemek'], ['일', 'iş'], ['학교', 'okul'], ['시간', 'zaman'],
-        ['낮', 'gün'], ['밤', 'gece'], ['가족', 'aile'], ['사랑', 'sevgi'], ['게임', 'oyun'],
-        ['배우다', 'öğrenmek'], ['쓰다', 'yazmak'], ['읽다', 'okumak'], ['생각', 'düşünmek'], ['말하다', 'konuşmak'],
-        ['듣다', 'dinlemek'], ['걷다', 'yürümek'], ['달리다', 'koşmak'], ['점프', 'atlamak'], ['자다', 'uyumak'],
-        ['꿈', 'rüya'], ['희망', 'umut'], ['평화', 'barış'], ['진실', 'gerçek'], ['빛', 'ışık'],
-        ['어둠', 'karanlık'], ['불', 'ateş'], ['땅', 'toprak'], ['바람', 'rüzgar'], ['비', 'yağmur'],
-        ['눈', 'kar'], ['구름', 'bulut'], ['별', 'yıldız'], ['달', 'ay'], ['나무', 'ağaç'],
-        ['꽃', 'çiçek'], ['새', 'kuş'], ['물고기', 'balık'], ['고양이', 'kedi'], ['말', 'at'],
-        ['강', 'nehir'], ['바다', 'okyanus'], ['산', 'dağ'], ['숲', 'orman'], ['사막', 'çöl'],
-        ['섬', 'ada'], ['다리', 'köprü'], ['길', 'yol'], ['차', 'araba'], ['기차', 'tren'],
-        ['비행기', 'uçak'], ['배', 'gemi'], ['자전거', 'bisiklet'], ['전화', 'telefon'], ['컴퓨터', 'bilgisayar'],
-        ['카메라', 'kamera'], ['시계', 'saat'], ['열쇠', 'anahtar'], ['문', 'kapı'], ['창문', 'pencere'],
-        ['의자', 'sandalye'], ['테이블', 'masa'], ['침대', 'yatak'], ['램프', 'lamba'], ['거울', 'ayna'],
-        ['그림', 'resim'], ['펜', 'kalem'], ['종이', 'kağıt'], ['편지', 'mektup'], ['이야기', 'hikaye'],
-        ['노래', 'şarkı'], ['춤', 'dans'], ['그리다', 'boyamak'], ['그리다', 'çizmek'], ['놀다', 'oynamak'],
-        ['가르치다', 'öğretmek'], ['돕다', 'yardım'], ['미소', 'gülümseme'], ['웃다', 'gülmek'], ['울다', 'ağlamak'],
-        ['행복', 'mutlu'], ['슬픔', 'üzgün'], ['화남', 'kızgın'], ['차분', 'sakin'], ['용감', 'cesur'],
-        ['강한', 'güçlü'], ['똑똑', 'akıllı'], ['친절', 'nazik'], ['좋은', 'iyi'], ['나쁜', 'kötü'],
-        ['큰', 'büyük'], ['작은', 'küçük'], ['빠른', 'hızlı'], ['느린', 'yavaş'], ['뜨거운', 'sıcak'],
-        ['차가운', 'soğuk'], ['새로운', 'yeni'], ['오래된', 'eski'], ['젊은', 'genç'], ['자유', 'özgür'],
-        ['아름다운', 'güzel'], ['못생긴', 'çirkin'], ['깨끗한', 'temiz'], ['더러운', 'kirli'], ['부유한', 'zengin'],
-        ['가난한', 'fakir'], ['쉬운', 'kolay'], ['어려운', 'zor'], ['간단한', 'basit'], ['복잡한', 'karmaşık']
-      ]
+      en: {
+        a1: [
+          ['hello', 'merhaba'], ['yes', 'evet'], ['no', 'hayır'], ['thank', 'teşekkür'], ['please', 'lütfen'],
+          ['apple', 'elma'], ['water', 'su'], ['dog', 'köpek'], ['cat', 'kedi'], ['house', 'ev'],
+          ['book', 'kitap'], ['sun', 'güneş'], ['day', 'gün'], ['night', 'gece'], ['family', 'aile'],
+          ['mother', 'anne'], ['father', 'baba'], ['boy', 'erkek çocuk'], ['girl', 'kız çocuk'], ['baby', 'bebek'],
+          ['car', 'araba'], ['bus', 'otobüs'], ['tree', 'ağaç'], ['flower', 'çiçek'], ['table', 'masa'],
+          ['chair', 'sandalye'], ['door', 'kapı'], ['window', 'pencere'], ['bed', 'yatak'], ['food', 'yemek'],
+          ['bread', 'ekmek'], ['milk', 'süt'], ['tea', 'çay'], ['coffee', 'kahve'], ['hot', 'sıcak'],
+          ['cold', 'soğuk'], ['big', 'büyük'], ['small', 'küçük'], ['good', 'iyi'], ['bad', 'kötü'],
+          ['one', 'bir'], ['two', 'iki'], ['three', 'üç'], ['red', 'kırmızı'], ['blue', 'mavi'],
+          ['black', 'siyah'], ['white', 'beyaz'], ['happy', 'mutlu'], ['sad', 'üzgün'], ['eat', 'yemek'],
+          ['drink', 'içmek'], ['walk', 'yürümek'], ['run', 'koşmak'], ['sleep', 'uyumak'], ['sit', 'oturmak'],
+          ['stand', 'ayakta durmak'], ['come', 'gelmek'], ['go', 'gitmek'], ['see', 'görmek'], ['hear', 'duymak'],
+          ['hand', 'el'], ['foot', 'ayak'], ['head', 'kafa'], ['eye', 'göz'], ['nose', 'burun'],
+          ['mouth', 'ağız'], ['hair', 'saç'], ['man', 'adam'], ['woman', 'kadın'], ['friend', 'arkadaş'],
+          ['bag', 'çanta'], ['pen', 'kalem'], ['phone', 'telefon']
+        ],
+        a2: [
+          ['school', 'okul'], ['work', 'iş'], ['money', 'para'], ['shop', 'dükkan'], ['market', 'market'],
+          ['hotel', 'otel'], ['hospital', 'hastane'], ['restaurant', 'restoran'], ['airport', 'havalimanı'], ['station', 'istasyon'],
+          ['city', 'şehir'], ['country', 'ülke'], ['street', 'sokak'], ['road', 'yol'], ['bridge', 'köprü'],
+          ['train', 'tren'], ['plane', 'uçak'], ['bicycle', 'bisiklet'], ['weather', 'hava'], ['rain', 'yağmur'],
+          ['snow', 'kar'], ['wind', 'rüzgar'], ['cloud', 'bulut'], ['summer', 'yaz'], ['winter', 'kış'],
+          ['spring', 'ilkbahar'], ['autumn', 'sonbahar'], ['morning', 'sabah'], ['evening', 'akşam'], ['week', 'hafta'],
+          ['month', 'ay'], ['year', 'yıl'], ['time', 'zaman'], ['hour', 'saat'], ['minute', 'dakika'],
+          ['early', 'erken'], ['late', 'geç'], ['today', 'bugün'], ['tomorrow', 'yarın'], ['yesterday', 'dün'],
+          ['shirt', 'gömlek'], ['shoes', 'ayakkabı'], ['dress', 'elbise'], ['coat', 'palto'], ['watch', 'kol saati'],
+          ['computer', 'bilgisayar'], ['email', 'e-posta'], ['picture', 'resim'], ['photo', 'fotoğraf'], ['music', 'müzik'],
+          ['song', 'şarkı'], ['game', 'oyun'], ['sport', 'spor'], ['football', 'futbol'], ['ticket', 'bilet'],
+          ['price', 'fiyat'], ['cheap', 'ucuz'], ['expensive', 'pahalı'], ['buy', 'satın almak'], ['sell', 'satmak'],
+          ['speak', 'konuşmak'], ['listen', 'dinlemek'], ['read', 'okumak'], ['write', 'yazmak'], ['learn', 'öğrenmek'],
+          ['teach', 'öğretmek'], ['understand', 'anlamak'], ['know', 'bilmek'], ['think', 'düşünmek'], ['remember', 'hatırlamak'],
+          ['forget', 'unutmak'], ['begin', 'başlamak'], ['finish', 'bitirmek']
+        ],
+        b1: [
+          ['travel', 'seyahat'], ['journey', 'yolculuk'], ['holiday', 'tatil'], ['tourist', 'turist'], ['luggage', 'bagaj'],
+          ['passport', 'pasaport'], ['visa', 'vize'], ['culture', 'kültür'], ['language', 'dil'], ['translation', 'çeviri'],
+          ['government', 'hükümet'], ['law', 'yasa'], ['right', 'hak'], ['freedom', 'özgürlük'], ['society', 'toplum'],
+          ['population', 'nüfus'], ['citizen', 'vatandaş'], ['vote', 'oy'], ['election', 'seçim'], ['democracy', 'demokrasi'],
+          ['economy', 'ekonomi'], ['business', 'iş'], ['company', 'şirket'], ['factory', 'fabrika'], ['office', 'ofis'],
+          ['employee', 'çalışan'], ['manager', 'müdür'], ['salary', 'maaş'], ['interview', 'mülakat'], ['career', 'kariyer'],
+          ['education', 'eğitim'], ['university', 'üniversite'], ['degree', 'derece'], ['exam', 'sınav'], ['grade', 'not'],
+          ['subject', 'konu'], ['science', 'bilim'], ['research', 'araştırma'], ['experiment', 'deney'], ['theory', 'teori'],
+          ['technology', 'teknoloji'], ['machine', 'makine'], ['invention', 'buluş'], ['develop', 'geliştirmek'], ['improve', 'iyileştirmek'],
+          ['health', 'sağlık'], ['medicine', 'ilaç'], ['disease', 'hastalık'], ['treatment', 'tedavi'], ['doctor', 'doktor'],
+          ['patient', 'hasta'], ['pain', 'ağrı'], ['injury', 'yaralanma'], ['accident', 'kaza'], ['emergency', 'acil durum'],
+          ['environment', 'çevre'], ['nature', 'doğa'], ['pollution', 'kirlilik'], ['energy', 'enerji'], ['climate', 'iklim'],
+          ['ocean', 'okyanus'], ['forest', 'orman'], ['mountain', 'dağ'], ['desert', 'çöl'], ['island', 'ada'],
+          ['advantage', 'avantaj'], ['disadvantage', 'dezavantaj'], ['opportunity', 'fırsat'], ['challenge', 'zorluk'], ['solution', 'çözüm'],
+          ['decision', 'karar'], ['choice', 'seçim'], ['opinion', 'görüş']
+        ],
+        b2: [
+          ['achievement', 'başarı'], ['ambition', 'hırs'], ['attitude', 'tutum'], ['behavior', 'davranış'], ['characteristic', 'özellik'],
+          ['conscience', 'vicdan'], ['courage', 'cesaret'], ['determination', 'kararlılık'], ['discipline', 'disiplin'], ['enthusiasm', 'coşku'],
+          ['independence', 'bağımsızlık'], ['initiative', 'inisiyatif'], ['intelligence', 'zeka'], ['maturity', 'olgunluk'], ['motivation', 'motivasyon'],
+          ['patience', 'sabır'], ['perspective', 'bakış açısı'], ['potential', 'potansiyel'], ['pride', 'gurur'], ['principle', 'ilke'],
+          ['priority', 'öncelik'], ['responsibility', 'sorumluluk'], ['sacrifice', 'fedakarlık'], ['strategy', 'strateji'], ['virtue', 'erdem'],
+          ['analyze', 'analiz etmek'], ['assess', 'değerlendirmek'], ['clarify', 'açıklığa kavuşturmak'], ['collaborate', 'işbirliği yapmak'], ['conclude', 'sonuçlandırmak'],
+          ['confirm', 'onaylamak'], ['criticize', 'eleştirmek'], ['demonstrate', 'göstermek'], ['emphasize', 'vurgulamak'], ['establish', 'kurmak'],
+          ['evaluate', 'değerlendirmek'], ['illustrate', 'örneklemek'], ['implement', 'uygulamak'], ['indicate', 'belirtmek'], ['justify', 'haklı çıkarmak'],
+          ['maintain', 'sürdürmek'], ['modify', 'değiştirmek'], ['perceive', 'algılamak'], ['persuade', 'ikna etmek'], ['predict', 'tahmin etmek'],
+          ['phenomenon', 'olgu'], ['controversy', 'tartışma'], ['hypothesis', 'hipotez'], ['methodology', 'metodoloji'], ['paradigm', 'paradigma'],
+          ['correlation', 'ilişki'], ['consequence', 'sonuç'], ['criteria', 'kriter'], ['dimension', 'boyut'], ['framework', 'çerçeve'],
+          ['implication', 'ima'], ['insight', 'içgörü'], ['integrity', 'bütünlük'], ['interpretation', 'yorum'], ['legitimacy', 'meşruiyet'],
+          ['magnitude', 'büyüklük'], ['mechanism', 'mekanizma'], ['objective', 'amaç'], ['perception', 'algı'], ['proportion', 'oran'],
+          ['relevance', 'ilgililik'], ['scope', 'kapsam'], ['significance', 'önem'], ['specification', 'şartname'], ['structure', 'yapı'],
+          ['substantial', 'önemli'], ['sustainable', 'sürdürülebilir'], ['systematic', 'sistematik']
+        ],
+        c1: [
+          ['coherent', 'tutarlı'], ['comprehensive', 'kapsamlı'], ['contingent', 'koşullu'], ['discourse', 'söylem'], ['elusive', 'belirsiz'],
+          ['embed', 'yerleştirmek'], ['empirical', 'deneysel'], ['encompass', 'kapsamak'], ['endeavor', 'çaba'], ['equitable', 'adil'],
+          ['inherent', 'doğal'], ['intrinsic', 'özgün'], ['marginal', 'marjinal'], ['meticulous', 'titiz'], ['negligible', 'önemsiz'],
+          ['paradigmatic', 'paradigmatik'], ['plausible', 'makul'], ['precedent', 'emsal'], ['prerequisite', 'ön koşul'], ['profound', 'derin'],
+          ['ambiguous', 'belirsiz'], ['arbitrary', 'keyfi'], ['conceive', 'tasarlamak'], ['constituency', 'seçmen'], ['constraint', 'kısıtlama'],
+          ['deduce', 'çıkarmak'], ['deficient', 'eksik'], ['delineate', 'belirlemek'], ['denote', 'belirtmek'], ['differentiate', 'ayırt etmek'],
+          ['discrete', 'ayrık'], ['disparity', 'eşitsizlik'], ['disposition', 'eğilim'], ['doctrine', 'doktrin'], ['domain', 'alan'],
+          ['elaborate', 'detaylandırmak'], ['erode', 'aşındırmak'], ['exploit', 'sömürmek'], ['feasible', 'uygulanabilir'], ['fluctuate', 'dalgalanmak'],
+          ['forthcoming', 'yaklaşan'], ['formulate', 'formüle etmek'], ['gratuitous', 'gereksiz'], ['hierarchy', 'hiyerarşi'], ['ideology', 'ideoloji'],
+          ['implicit', 'örtük'], ['incline', 'eğilmek'], ['indispensable', 'vazgeçilmez'], ['inevitable', 'kaçınılmaz'], ['infrastructure', 'altyapı'],
+          ['inhibit', 'engellemek'], ['innovate', 'yenilik yapmak'], ['integral', 'ayrılmaz'], ['intervene', 'müdahale etmek'], ['invoke', 'başvurmak'],
+          ['underlying', 'altta yatan'], ['undergo', 'uğramak'], ['undermine', 'baltalamak'], ['unify', 'birleştirmek'], ['utilize', 'kullanmak'],
+          ['verify', 'doğrulamak'], ['viable', 'uygulanabilir'], ['volatile', 'değişken'], ['warrant', 'garanti etmek'], ['whereby', 'vasıtasıyla']
+        ],
+        c2: [
+          ['aberration', 'sapma'], ['abstruse', 'anlaşılmaz'], ['accentuate', 'vurgulamak'], ['acquiesce', 'razı olmak'], ['adroit', 'becerikli'],
+          ['ameliorate', 'iyileştirmek'], ['anachronistic', 'zamana uymayan'], ['ancillary', 'yardımcı'], ['antithetical', 'zıt'], ['apprehension', 'endişe'],
+          ['arcane', 'gizli'], ['assiduous', 'gayretli'], ['auspicious', 'uğurlu'], ['axiom', 'aksiyom'], ['belligerent', 'kavgacı'],
+          ['circumscribe', 'sınırlamak'], ['coalesce', 'birleşmek'], ['cogent', 'ikna edici'], ['commensurate', 'orantılı'], ['compendium', 'özet'],
+          ['concomitant', 'eşlik eden'], ['confound', 'şaşırtmak'], ['congenial', 'uyumlu'], ['conjecture', 'tahmin'], ['contentious', 'tartışmalı'],
+          ['deference', 'saygı'], ['delineation', 'tasvir'], ['derivative', 'türev'], ['dichotomy', 'ikilem'], ['didactic', 'öğretici'],
+          ['discern', 'ayırt etmak'], ['discrete', 'ayrı'], ['disingenuous', 'samimiyetsiz'], ['disparate', 'farklı'], ['disseminate', 'yaymak'],
+          ['efficacious', 'etkili'], ['elucidate', 'aydınlatmak'], ['empiricism', 'deneycilik'], ['endemic', 'endemik'], ['engender', 'doğurmak'],
+          ['ephemeral', 'geçici'], ['epistemology', 'bilgi kuramı'], ['equivocal', 'belirsiz'], ['erudite', 'bilgili'], ['esoteric', 'ezoterik'],
+          ['exacerbate', 'kötüleştirmek'], ['exculpate', 'temize çıkarmak'], ['exigent', 'acil'], ['extrapolate', 'tahmin etmek'], ['facetious', 'şakacı'],
+          ['fallacious', 'yanıltıcı'], ['fortuitous', 'tesadüfi'], ['gregarious', 'sosyal'], ['hegemony', 'hegemonya'], ['heuristic', 'sezgisel'],
+          ['homogeneous', 'homojen'], ['iconoclast', 'geleneklere aykırı'], ['idiosyncratic', 'kendine özgü'], ['immutable', 'değişmez'], ['implacable', 'yatıştırılamaz'],
+          ['impute', 'atfetmek'], ['indefatigable', 'yorulmaz'], ['indigenous', 'yerli'], ['ineffable', 'tarif edilemez'], ['inexorable', 'acımasız'],
+          ['insidious', 'sinsi'], ['intransigent', 'uzlaşmaz'], ['inveterate', 'köklü'], ['juxtapose', 'yan yana koymak'], ['loquacious', 'konuşkan']
+        ]
+      },
+      es: {
+        a1: [
+          ['hola', 'merhaba'], ['sí', 'evet'], ['no', 'hayır'], ['gracias', 'teşekkür'], ['por favor', 'lütfen'],
+          ['manzana', 'elma'], ['agua', 'su'], ['perro', 'köpek'], ['gato', 'kedi'], ['casa', 'ev'],
+          ['libro', 'kitap'], ['sol', 'güneş'], ['día', 'gün'], ['noche', 'gece'], ['familia', 'aile'],
+          ['madre', 'anne'], ['padre', 'baba'], ['niño', 'erkek çocuk'], ['niña', 'kız çocuk'], ['bebé', 'bebek'],
+          ['coche', 'araba'], ['autobús', 'otobüs'], ['árbol', 'ağaç'], ['flor', 'çiçek'], ['mesa', 'masa'],
+          ['silla', 'sandalye'], ['puerta', 'kapı'], ['ventana', 'pencere'], ['cama', 'yatak'], ['comida', 'yemek'],
+          ['pan', 'ekmek'], ['leche', 'süt'], ['té', 'çay'], ['café', 'kahve'], ['caliente', 'sıcak'],
+          ['frío', 'soğuk'], ['grande', 'büyük'], ['pequeño', 'küçük'], ['bueno', 'iyi'], ['malo', 'kötü'],
+          ['uno', 'bir'], ['dos', 'iki'], ['tres', 'üç'], ['rojo', 'kırmızı'], ['azul', 'mavi'],
+          ['negro', 'siyah'], ['blanco', 'beyaz'], ['feliz', 'mutlu'], ['triste', 'üzgün'], ['comer', 'yemek'],
+          ['beber', 'içmek'], ['caminar', 'yürümek'], ['correr', 'koşmak'], ['dormir', 'uyumak'], ['sentar', 'oturmak'],
+          ['estar', 'ayakta durmak'], ['venir', 'gelmek'], ['ir', 'gitmek'], ['ver', 'görmek'], ['oír', 'duymak'],
+          ['mano', 'el'], ['pie', 'ayak'], ['cabeza', 'kafa'], ['ojo', 'göz'], ['nariz', 'burun'],
+          ['boca', 'ağız'], ['pelo', 'saç'], ['hombre', 'adam'], ['mujer', 'kadın'], ['amigo', 'arkadaş'],
+          ['bolsa', 'çanta'], ['pluma', 'kalem'], ['teléfono', 'telefon']
+        ],
+        a2: [
+          ['escuela', 'okul'], ['trabajo', 'iş'], ['dinero', 'para'], ['tienda', 'dükkan'], ['mercado', 'market'],
+          ['hotel', 'otel'], ['hospital', 'hastane'], ['restaurante', 'restoran'], ['aeropuerto', 'havalimanı'], ['estación', 'istasyon'],
+          ['ciudad', 'şehir'], ['país', 'ülke'], ['calle', 'sokak'], ['camino', 'yol'], ['puente', 'köprü'],
+          ['tren', 'tren'], ['avión', 'uçak'], ['bicicleta', 'bisiklet'], ['tiempo', 'hava'], ['lluvia', 'yağmur'],
+          ['nieve', 'kar'], ['viento', 'rüzgar'], ['nube', 'bulut'], ['verano', 'yaz'], ['invierno', 'kış'],
+          ['primavera', 'ilkbahar'], ['otoño', 'sonbahar'], ['mañana', 'sabah'], ['tarde', 'akşam'], ['semana', 'hafta'],
+          ['mes', 'ay'], ['año', 'yıl'], ['tiempo', 'zaman'], ['hora', 'saat'], ['minuto', 'dakika'],
+          ['temprano', 'erken'], ['tarde', 'geç'], ['hoy', 'bugün'], ['mañana', 'yarın'], ['ayer', 'dün'],
+          ['camisa', 'gömlek'], ['zapatos', 'ayakkabı'], ['vestido', 'elbise'], ['abrigo', 'palto'], ['reloj', 'kol saati'],
+          ['ordenador', 'bilgisayar'], ['correo', 'e-posta'], ['cuadro', 'resim'], ['foto', 'fotoğraf'], ['música', 'müzik'],
+          ['canción', 'şarkı'], ['juego', 'oyun'], ['deporte', 'spor'], ['fútbol', 'futbol'], ['billete', 'bilet'],
+          ['precio', 'fiyat'], ['barato', 'ucuz'], ['caro', 'pahalı'], ['comprar', 'satın almak'], ['vender', 'satmak'],
+          ['hablar', 'konuşmak'], ['escuchar', 'dinlemek'], ['leer', 'okumak'], ['escribir', 'yazmak'], ['aprender', 'öğrenmek'],
+          ['enseñar', 'öğretmek'], ['entender', 'anlamak'], ['saber', 'bilmek'], ['pensar', 'düşünmek'], ['recordar', 'hatırlamak'],
+          ['olvidar', 'unutmak'], ['empezar', 'başlamak'], ['terminar', 'bitirmek']
+        ],
+        b1: [
+          ['viaje', 'seyahat'], ['jornada', 'yolculuk'], ['vacaciones', 'tatil'], ['turista', 'turist'], ['equipaje', 'bagaj'],
+          ['pasaporte', 'pasaport'], ['visa', 'vize'], ['cultura', 'kültür'], ['idioma', 'dil'], ['traducción', 'çeviri'],
+          ['gobierno', 'hükümet'], ['ley', 'yasa'], ['derecho', 'hak'], ['libertad', 'özgürlük'], ['sociedad', 'toplum'],
+          ['población', 'nüfus'], ['ciudadano', 'vatandaş'], ['voto', 'oy'], ['elección', 'seçim'], ['democracia', 'demokrasi'],
+          ['economía', 'ekonomi'], ['negocio', 'iş'], ['empresa', 'şirket'], ['fábrica', 'fabrika'], ['oficina', 'ofis'],
+          ['empleado', 'çalışan'], ['gerente', 'müdür'], ['salario', 'maaş'], ['entrevista', 'mülakat'], ['carrera', 'kariyer'],
+          ['educación', 'eğitim'], ['universidad', 'üniversite'], ['título', 'derece'], ['examen', 'sınav'], ['nota', 'not'],
+          ['tema', 'konu'], ['ciencia', 'bilim'], ['investigación', 'araştırma'], ['experimento', 'deney'], ['teoría', 'teori'],
+          ['tecnología', 'teknoloji'], ['máquina', 'makine'], ['invención', 'buluş'], ['desarrollar', 'geliştirmek'], ['mejorar', 'iyileştirmek'],
+          ['salud', 'sağlık'], ['medicina', 'ilaç'], ['enfermedad', 'hastalık'], ['tratamiento', 'tedavi'], ['médico', 'doktor'],
+          ['paciente', 'hasta'], ['dolor', 'ağrı'], ['lesión', 'yaralanma'], ['accidente', 'kaza'], ['emergencia', 'acil durum'],
+          ['ambiente', 'çevre'], ['naturaleza', 'doğa'], ['contaminación', 'kirlilik'], ['energía', 'enerji'], ['clima', 'iklim'],
+          ['océano', 'okyanus'], ['bosque', 'orman'], ['montaña', 'dağ'], ['desierto', 'çöl'], ['isla', 'ada'],
+          ['ventaja', 'avantaj'], ['desventaja', 'dezavantaj'], ['oportunidad', 'fırsat'], ['desafío', 'zorluk'], ['solución', 'çözüm'],
+          ['decisión', 'karar'], ['elección', 'seçim'], ['opinión', 'görüş']
+        ],
+        b2: [
+          ['logro', 'başarı'], ['ambición', 'hırs'], ['actitud', 'tutum'], ['comportamiento', 'davranış'], ['característica', 'özellik'],
+          ['conciencia', 'vicdan'], ['coraje', 'cesaret'], ['determinación', 'kararlılık'], ['disciplina', 'disiplin'], ['entusiasmo', 'coşku'],
+          ['independencia', 'bağımsızlık'], ['iniciativa', 'inisiyatif'], ['inteligencia', 'zeka'], ['madurez', 'olgunluk'], ['motivación', 'motivasyon'],
+          ['paciencia', 'sabır'], ['perspectiva', 'bakış açısı'], ['potencial', 'potansiyel'], ['orgullo', 'gurur'], ['principio', 'ilke'],
+          ['prioridad', 'öncelik'], ['responsabilidad', 'sorumluluk'], ['sacrificio', 'fedakarlık'], ['estrategia', 'strateji'], ['virtud', 'erdem'],
+          ['analizar', 'analiz etmek'], ['evaluar', 'değerlendirmek'], ['aclarar', 'açıklığa kavuşturmak'], ['colaborar', 'işbirliği yapmak'], ['concluir', 'sonuçlandırmak'],
+          ['confirmar', 'onaylamak'], ['criticar', 'eleştirmek'], ['demostrar', 'göstermek'], ['enfatizar', 'vurgulamak'], ['establecer', 'kurmak'],
+          ['evaluar', 'değerlendirmek'], ['ilustrar', 'örneklemek'], ['implementar', 'uygulamak'], ['indicar', 'belirtmek'], ['justificar', 'haklı çıkarmak'],
+          ['mantener', 'sürdürmek'], ['modificar', 'değiştirmek'], ['percibir', 'algılamak'], ['persuadir', 'ikna etmek'], ['predecir', 'tahmin etmek'],
+          ['fenómeno', 'olgu'], ['controversia', 'tartışma'], ['hipótesis', 'hipotez'], ['metodología', 'metodoloji'], ['paradigma', 'paradigma'],
+          ['correlación', 'ilişki'], ['consecuencia', 'sonuç'], ['criterio', 'kriter'], ['dimensión', 'boyut'], ['marco', 'çerçeve'],
+          ['implicación', 'ima'], ['perspicacia', 'içgörü'], ['integridad', 'bütünlük'], ['interpretación', 'yorum'], ['legitimidad', 'meşruiyet'],
+          ['magnitud', 'büyüklük'], ['mecanismo', 'mekanizma'], ['objetivo', 'amaç'], ['percepción', 'algı'], ['proporción', 'oran'],
+          ['relevancia', 'ilgililik'], ['alcance', 'kapsam'], ['significado', 'önem'], ['especificación', 'şartname'], ['estructura', 'yapı'],
+          ['sustancial', 'önemli'], ['sostenible', 'sürdürülebilir'], ['sistemático', 'sistematik']
+        ],
+        c1: [
+          ['coherente', 'tutarlı'], ['comprensivo', 'kapsamlı'], ['contingente', 'koşullu'], ['discurso', 'söylem'], ['elusivo', 'belirsiz'],
+          ['incrustar', 'yerleştirmek'], ['empírico', 'deneysel'], ['abarcar', 'kapsamak'], ['esfuerzo', 'çaba'], ['equitativo', 'adil'],
+          ['inherente', 'doğal'], ['intrínseco', 'özgün'], ['marginal', 'marjinal'], ['meticuloso', 'titiz'], ['insignificante', 'önemsiz'],
+          ['paradigmático', 'paradigmatik'], ['plausible', 'makul'], ['precedente', 'emsal'], ['requisito', 'ön koşul'], ['profundo', 'derin'],
+          ['ambiguo', 'belirsiz'], ['arbitrario', 'keyfi'], ['concebir', 'tasarlamak'], ['electorado', 'seçmen'], ['restricción', 'kısıtlama'],
+          ['deducir', 'çıkarmak'], ['deficiente', 'eksik'], ['delinear', 'belirlemek'], ['denotar', 'belirtmek'], ['diferenciar', 'ayırt etmek'],
+          ['discreto', 'ayrık'], ['disparidad', 'eşitsizlik'], ['disposición', 'eğilim'], ['doctrina', 'doktrin'], ['dominio', 'alan'],
+          ['elaborar', 'detaylandırmak'], ['erosionar', 'aşındırmak'], ['explotar', 'sömürmek'], ['factible', 'uygulanabilir'], ['fluctuar', 'dalgalanmak'],
+          ['próximo', 'yaklaşan'], ['formular', 'formüle etmek'], ['gratuito', 'gereksiz'], ['jerarquía', 'hiyerarşi'], ['ideología', 'ideoloji'],
+          ['implícito', 'örtük'], ['inclinarse', 'eğilmek'], ['indispensable', 'vazgeçilmez'], ['inevitable', 'kaçınılmaz'], ['infraestructura', 'altyapı'],
+          ['inhibir', 'engellemek'], ['innovar', 'yenilik yapmak'], ['integral', 'ayrılmaz'], ['intervenir', 'müdahale etmek'], ['invocar', 'başvurmak'],
+          ['subyacente', 'altta yatan'], ['someterse', 'uğramak'], ['socavar', 'baltalamak'], ['unificar', 'birleştirmek'], ['utilizar', 'kullanmak'],
+          ['verificar', 'doğrulamak'], ['viable', 'uygulanabilir'], ['volátil', 'değişken'], ['garantizar', 'garanti etmek'], ['mediante', 'vasıtasıyla']
+        ],
+        c2: [
+          ['aberración', 'sapma'], ['abstruso', 'anlaşılmaz'], ['acentuar', 'vurgulamak'], ['aquiescer', 'razı olmak'], ['diestro', 'becerikli'],
+          ['mejorar', 'iyileştirmek'], ['anacrónico', 'zamana uymayan'], ['auxiliar', 'yardımcı'], ['antitético', 'zıt'], ['aprehensión', 'endişe'],
+          ['arcano', 'gizli'], ['asiduo', 'gayretli'], ['auspicioso', 'uğurlu'], ['axioma', 'aksiyom'], ['beligerante', 'kavgacı'],
+          ['circunscribir', 'sınırlamak'], ['unirse', 'birleşmek'], ['convincente', 'ikna edici'], ['proporcional', 'orantılı'], ['compendio', 'özet'],
+          ['concomitante', 'eşlik eden'], ['confundir', 'şaşırtmak'], ['agradable', 'uyumlu'], ['conjetura', 'tahmin'], ['contencioso', 'tartışmalı'],
+          ['deferencia', 'saygı'], ['delineación', 'tasvir'], ['derivado', 'türev'], ['dicotomía', 'ikilem'], ['didáctico', 'öğretici'],
+          ['discernir', 'ayırt etmak'], ['discreto', 'ayrı'], ['falso', 'samimiyetsiz'], ['dispar', 'farklı'], ['diseminar', 'yaymak'],
+          ['eficaz', 'etkili'], ['elucidar', 'aydınlatmak'], ['empirismo', 'deneycilik'], ['endémico', 'endemik'], ['engendrar', 'doğurmak'],
+          ['efímero', 'geçici'], ['epistemología', 'bilgi kuramı'], ['equívoco', 'belirsiz'], ['erudito', 'bilgili'], ['esotérico', 'ezoterik'],
+          ['exacerbar', 'kötüleştirmek'], ['exculpar', 'temize çıkarmak'], ['urgente', 'acil'], ['extrapolar', 'tahmin etmek'], ['jocoso', 'şakacı'],
+          ['falaz', 'yanıltıcı'], ['fortuito', 'tesadüfi'], ['gregario', 'sosyal'], ['hegemonía', 'hegemonya'], ['heurístico', 'sezgisel'],
+          ['homogéneo', 'homojen'], ['iconoclasta', 'geleneklere aykırı'], ['idiosincrático', 'kendine özgü'], ['inmutable', 'değişmez'], ['implacable', 'yatıştırılamaz'],
+          ['imputar', 'atfetmek'], ['infatigable', 'yorulmaz'], ['indígena', 'yerli'], ['inefable', 'tarif edilemez'], ['inexorable', 'acımasız'],
+          ['insidioso', 'sinsi'], ['intransigente', 'uzlaşmaz'], ['inveterado', 'köklü'], ['yuxtaponer', 'yan yana koymak'], ['locuaz', 'konuşkan']
+        ]
+      },
+      kr: {
+        a1: [
+          ['안녕', 'merhaba'], ['네', 'evet'], ['아니오', 'hayır'], ['감사', 'teşekkür'], ['제발', 'lütfen'],
+          ['사과', 'elma'], ['물', 'su'], ['개', 'köpek'], ['고양이', 'kedi'], ['집', 'ev'],
+          ['책', 'kitap'], ['해', 'güneş'], ['낮', 'gün'], ['밤', 'gece'], ['가족', 'aile'],
+          ['엄마', 'anne'], ['아빠', 'baba'], ['소년', 'erkek çocuk'], ['소녀', 'kız çocuk'], ['아기', 'bebek'],
+          ['차', 'araba'], ['버스', 'otobüs'], ['나무', 'ağaç'], ['꽃', 'çiçek'], ['테이블', 'masa'],
+          ['의자', 'sandalye'], ['문', 'kapı'], ['창문', 'pencere'], ['침대', 'yatak'], ['음식', 'yemek'],
+          ['빵', 'ekmek'], ['우유', 'süt'], ['차', 'çay'], ['커피', 'kahve'], ['뜨거운', 'sıcak'],
+          ['차가운', 'soğuk'], ['큰', 'büyük'], ['작은', 'küçük'], ['좋은', 'iyi'], ['나쁜', 'kötü'],
+          ['하나', 'bir'], ['둘', 'iki'], ['셋', 'üç'], ['빨간', 'kırmızı'], ['파란', 'mavi'],
+          ['검은', 'siyah'], ['하얀', 'beyaz'], ['행복한', 'mutlu'], ['슬픈', 'üzgün'], ['먹다', 'yemek'],
+          ['마시다', 'içmek'], ['걷다', 'yürümek'], ['달리다', 'koşmak'], ['자다', 'uyumak'], ['앉다', 'oturmak'],
+          ['서다', 'ayakta durmak'], ['오다', 'gelmek'], ['가다', 'gitmek'], ['보다', 'görmek'], ['듣다', 'duymak'],
+          ['손', 'el'], ['발', 'ayak'], ['머리', 'kafa'], ['눈', 'göz'], ['코', 'burun'],
+          ['입', 'ağız'], ['머리카락', 'saç'], ['남자', 'adam'], ['여자', 'kadın'], ['친구', 'arkadaş'],
+          ['가방', 'çanta'], ['펜', 'kalem'], ['전화', 'telefon']
+        ],
+        a2: [
+          ['학교', 'okul'], ['일', 'iş'], ['돈', 'para'], ['가게', 'dükkan'], ['시장', 'market'],
+          ['호텔', 'otel'], ['병원', 'hastane'], ['식당', 'restoran'], ['공항', 'havalimanı'], ['역', 'istasyon'],
+          ['도시', 'şehir'], ['나라', 'ülke'], ['거리', 'sokak'], ['길', 'yol'], ['다리', 'köprü'],
+          ['기차', 'tren'], ['비행기', 'uçak'], ['자전거', 'bisiklet'], ['날씨', 'hava'], ['비', 'yağmur'],
+          ['눈', 'kar'], ['바람', 'rüzgar'], ['구름', 'bulut'], ['여름', 'yaz'], ['겨울', 'kış'],
+          ['봄', 'ilkbahar'], ['가을', 'sonbahar'], ['아침', 'sabah'], ['저녁', 'akşam'], ['주', 'hafta'],
+          ['월', 'ay'], ['년', 'yıl'], ['시간', 'zaman'], ['시', 'saat'], ['분', 'dakika'],
+          ['이른', 'erken'], ['늦은', 'geç'], ['오늘', 'bugün'], ['내일', 'yarın'], ['어제', 'dün'],
+          ['셔츠', 'gömlek'], ['신발', 'ayakkabı'], ['드레스', 'elbise'], ['코트', 'palto'], ['시계', 'kol saati'],
+          ['컴퓨터', 'bilgisayar'], ['이메일', 'e-posta'], ['그림', 'resim'], ['사진', 'fotoğraf'], ['음악', 'müzik'],
+          ['노래', 'şarkı'], ['게임', 'oyun'], ['스포츠', 'spor'], ['축구', 'futbol'], ['표', 'bilet'],
+          ['가격', 'fiyat'], ['싼', 'ucuz'], ['비싼', 'pahalı'], ['사다', 'satın almak'], ['팔다', 'satmak'],
+          ['말하다', 'konuşmak'], ['듣다', 'dinlemek'], ['읽다', 'okumak'], ['쓰다', 'yazmak'], ['배우다', 'öğrenmek'],
+          ['가르치다', 'öğretmek'], ['이해하다', 'anlamak'], ['알다', 'bilmek'], ['생각하다', 'düşünmek'], ['기억하다', 'hatırlamak'],
+          ['잊다', 'unutmak'], ['시작하다', 'başlamak'], ['끝내다', 'bitirmek']
+        ],
+        b1: [
+          ['여행', 'seyahat'], ['여정', 'yolculuk'], ['휴가', 'tatil'], ['관광객', 'turist'], ['짐', 'bagaj'],
+          ['여권', 'pasaport'], ['비자', 'vize'], ['문화', 'kültür'], ['언어', 'dil'], ['번역', 'çeviri'],
+          ['정부', 'hükümet'], ['법', 'yasa'], ['권리', 'hak'], ['자유', 'özgürlük'], ['사회', 'toplum'],
+          ['인구', 'nüfus'], ['시민', 'vatandaş'], ['투표', 'oy'], ['선거', 'seçim'], ['민주주의', 'demokrasi'],
+          ['경제', 'ekonomi'], ['사업', 'iş'], ['회사', 'şirket'], ['공장', 'fabrika'], ['사무실', 'ofis'],
+          ['직원', 'çalışan'], ['관리자', 'müdür'], ['급여', 'maaş'], ['면접', 'mülakat'], ['경력', 'kariyer'],
+          ['교육', 'eğitim'], ['대학교', 'üniversite'], ['학위', 'derece'], ['시험', 'sınav'], ['성적', 'not'],
+          ['주제', 'konu'], ['과학', 'bilim'], ['연구', 'araştırma'], ['실험', 'deney'], ['이론', 'teori'],
+          ['기술', 'teknoloji'], ['기계', 'makine'], ['발명', 'buluş'], ['개발하다', 'geliştirmek'], ['개선하다', 'iyileştirmek'],
+          ['건강', 'sağlık'], ['약', 'ilaç'], ['질병', 'hastalık'], ['치료', 'tedavi'], ['의사', 'doktor'],
+          ['환자', 'hasta'], ['통증', 'ağrı'], ['부상', 'yaralanma'], ['사고', 'kaza'], ['긴급', 'acil durum'],
+          ['환경', 'çevre'], ['자연', 'doğa'], ['오염', 'kirlilik'], ['에너지', 'enerji'], ['기후', 'iklim'],
+          ['대양', 'okyanus'], ['숲', 'orman'], ['산', 'dağ'], ['사막', 'çöl'], ['섬', 'ada'],
+          ['이점', 'avantaj'], ['단점', 'dezavantaj'], ['기회', 'fırsat'], ['도전', 'zorluk'], ['해결책', 'çözüm'],
+          ['결정', 'karar'], ['선택', 'seçim'], ['의견', 'görüş']
+        ],
+        b2: [
+          ['성취', 'başarı'], ['야망', 'hırs'], ['태도', 'tutum'], ['행동', 'davranış'], ['특성', 'özellik'],
+          ['양심', 'vicdan'], ['용기', 'cesaret'], ['결단력', 'kararlılık'], ['규율', 'disiplin'], ['열정', 'coşku'],
+          ['독립', 'bağımsızlık'], ['주도권', 'inisiyatif'], ['지능', 'zeka'], ['성숙', 'olgunluk'], ['동기', 'motivasyon'],
+          ['인내', 'sabır'], ['관점', 'bakış açısı'], ['잠재력', 'potansiyel'], ['자부심', 'gurur'], ['원칙', 'ilke'],
+          ['우선순위', 'öncelik'], ['책임', 'sorumluluk'], ['희생', 'fedakarlık'], ['전략', 'strateji'], ['미덕', 'erdem'],
+          ['분석하다', 'analiz etmek'], ['평가하다', 'değerlendirmek'], ['명확히하다', 'açıklığa kavuşturmak'], ['협력하다', 'işbirliği yapmak'], ['결론짓다', 'sonuçlandırmak'],
+          ['확인하다', 'onaylamak'], ['비판하다', 'eleştirmek'], ['입증하다', 'göstermek'], ['강조하다', 'vurgulamak'], ['설립하다', 'kurmak'],
+          ['평가하다', 'değerlendirmek'], ['설명하다', 'örneklemek'], ['실행하다', 'uygulamak'], ['나타내다', 'belirtmek'], ['정당화하다', 'haklı çıkarmak'],
+          ['유지하다', 'sürdürmek'], ['수정하다', 'değiştirmek'], ['인식하다', 'algılamak'], ['설득하다', 'ikna etmek'], ['예측하다', 'tahmin etmek'],
+          ['현상', 'olgu'], ['논쟁', 'tartışma'], ['가설', 'hipotez'], ['방법론', 'metodoloji'], ['패러다임', 'paradigma'],
+          ['상관관계', 'ilişki'], ['결과', 'sonuç'], ['기준', 'kriter'], ['차원', 'boyut'], ['틀', 'çerçeve'],
+          ['함축', 'ima'], ['통찰력', 'içgörü'], ['무결성', 'bütünlük'], ['해석', 'yorum'], ['정당성', 'meşruiyet'],
+          ['규모', 'büyüklük'], ['메커니즘', 'mekanizma'], ['목표', 'amaç'], ['지각', 'algı'], ['비율', 'oran'],
+          ['관련성', 'ilgililik'], ['범위', 'kapsam'], ['중요성', 'önem'], ['사양', 'şartname'], ['구조', 'yapı'],
+          ['실질적인', 'önemli'], ['지속가능한', 'sürdürülebilir'], ['체계적인', 'sistematik']
+        ],
+        c1: [
+          ['일관된', 'tutarlı'], ['포괄적인', 'kapsamlı'], ['우발적인', 'koşullu'], ['담론', 'söylem'], ['애매한', 'belirsiz'],
+          ['내장하다', 'yerleştirmek'], ['경험적', 'deneysel'], ['포함하다', 'kapsamak'], ['노력', 'çaba'], ['공평한', 'adil'],
+          ['고유한', 'doğal'], ['본질적인', 'özgün'], ['주변의', 'marjinal'], ['세심한', 'titiz'], ['무시할만한', 'önemsiz'],
+          ['패러다임적', 'paradigmatik'], ['그럴듯한', 'makul'], ['선례', 'emsal'], ['전제조건', 'ön koşul'], ['심오한', 'derin'],
+          ['모호한', 'belirsiz'], ['자의적인', 'keyfi'], ['착상하다', 'tasarlamak'], ['선거구', 'seçmen'], ['제약', 'kısıtlama'],
+          ['추론하다', 'çıkarmak'], ['부족한', 'eksik'], ['묘사하다', 'belirlemek'], ['나타내다', 'belirtmek'], ['구별하다', 'ayırt etmek'],
+          ['이산의', 'ayrık'], ['불균형', 'eşitsizlik'], ['성향', 'eğilim'], ['교리', 'doktrin'], ['영역', 'alan'],
+          ['정교화하다', 'detaylandırmak'], ['침식하다', 'aşındırmak'], ['착취하다', 'sömürmek'], ['실행가능한', 'uygulanabilir'], ['변동하다', 'dalgalanmak'],
+          ['다가오는', 'yaklaşan'], ['공식화하다', 'formüle etmek'], ['불필요한', 'gereksiz'], ['계층', 'hiyerarşi'], ['이데올로기', 'ideoloji'],
+          ['암묵적', 'örtük'], ['기울다', 'eğilmek'], ['필수불가결한', 'vazgeçilmez'], ['불가피한', 'kaçınılmaz'], ['인프라', 'altyapı'],
+          ['억제하다', 'engellemek'], ['혁신하다', 'yenilik yapmak'], ['필수적인', 'ayrılmaz'], ['개입하다', 'müdahale etmek'], ['호출하다', 'başvurmak'],
+          ['근본적인', 'altta yatan'], ['겪다', 'uğramak'], ['약화시키다', 'baltalamak'], ['통합하다', 'birleştirmek'], ['활용하다', 'kullanmak'],
+          ['검증하다', 'doğrulamak'], ['실행가능한', 'uygulanabilir'], ['변동성있는', 'değişken'], ['보증하다', 'garanti etmek'], ['~에 의해', 'vasıtasıyla']
+        ],
+        c2: [
+          ['일탈', 'sapma'], ['난해한', 'anlaşılmaz'], ['강조하다', 'vurgulamak'], ['묵인하다', 'razı olmak'], ['능숙한', 'becerikli'],
+          ['개선하다', 'iyileştirmek'], ['시대착오적', 'zamana uymayan'], ['보조의', 'yardımcı'], ['정반대의', 'zıt'], ['우려', 'endişe'],
+          ['신비로운', 'gizli'], ['근면한', 'gayretli'], ['길조의', 'uğurlu'], ['공리', 'aksiyom'], ['호전적인', 'kavgacı'],
+          ['제한하다', 'sınırlamak'], ['합치다', 'birleşmek'], ['설득력있는', 'ikna edici'], ['상응하는', 'orantılı'], ['개요', 'özet'],
+          ['수반하는', 'eşlik eden'], ['혼란시키다', 'şaşırtmak'], ['마음이맞는', 'uyumlu'], ['추측', 'tahmin'], ['논쟁적인', 'tartışmalı'],
+          ['존중', 'saygı'], ['묘사', 'tasvir'], ['파생물', 'türev'], ['이분법', 'ikilem'], ['교훈적인', 'öğretici'],
+          ['식별하다', 'ayırt etmek'], ['별개의', 'ayrı'], ['불성실한', 'samimiyetsiz'], ['이질적인', 'farklı'], ['보급하다', 'yaymak'],
+          ['효과적인', 'etkili'], ['해명하다', 'aydınlatmak'], ['경험주의', 'deneycilik'], ['풍토병의', 'endemik'], ['낳다', 'doğurmak'],
+          ['일시적인', 'geçici'], ['인식론', 'bilgi kuramı'], ['애매한', 'belirsiz'], ['박식한', 'bilgili'], ['난해한', 'ezoterik'],
+          ['악화시키다', 'kötüleştirmek'], ['무죄를입증하다', 'temize çıkarmak'], ['긴급한', 'acil'], ['추정하다', 'tahmin etmek'], ['익살스러운', 'şakacı'],
+          ['오류의', 'yanıltıcı'], ['우연한', 'tesadüfi'], ['사교적인', 'sosyal'], ['헤게모니', 'hegemonya'], ['발견적', 'sezgisel'],
+          ['동질의', 'homojen'], ['인습타파자', 'geleneklere aykırı'], ['특이한', 'kendine özgü'], ['불변의', 'değişmez'], ['무자비한', 'yatıştırılamaz'],
+          ['전가하다', 'atfetmek'], ['지칠줄모르는', 'yorulmaz'], ['토착의', 'yerli'], ['형언할수없는', 'tarif edilemez'], ['가차없는', 'acımasız'],
+          ['교활한', 'sinsi'], ['완고한', 'uzlaşmaz'], ['뿌리깊은', 'köklü'], ['병치하다', 'yan yana koymak'], ['수다스러운', 'konuşkan']
+        ]
+      }
     };
 
     // ===== MAHJONG DÜZENLERİ =====
@@ -726,6 +1122,7 @@
     // ===== DOM Elemanları =====
     const langSelect = document.getElementById('langSelect');
     const levelSelect = document.getElementById('levelSelect');
+    const tilesSelect = document.getElementById('tilesSelect');
     const timeSelect = document.getElementById('timeSelect');
     const startBtn = document.getElementById('startBtn');
     const resetBtn = document.getElementById('resetBtn');
@@ -862,12 +1259,14 @@
     function setupGame() {
       // Ayarları al
       const lang = langSelect.value;
-      const level = levelSelect.value;
-      const layout = layouts[level];
+      const level = levelSelect.value; // a1, a2, b1, b2, c1, c2
+      const tileLayout = tilesSelect.value; // easy, medium, hard
+      const layout = layouts[tileLayout];
       totalPairs = layout.length / 2;
 
-      // Yabancı-Türkçe kelime çiftlerini seç
-      const pairs = shuffle([...wordPairs[lang]]).slice(0, totalPairs);
+      // Seçilen dil ve seviyeye göre kelime çiftlerini al
+      const availablePairs = wordPairs[lang][level];
+      const pairs = shuffle([...availablePairs]).slice(0, totalPairs);
       const tileWords = [];
       
       // Her çiftten yabancı ve Türkçe kelimeyi ekle
@@ -885,6 +1284,12 @@
       score = 0;
       moves = 0;
       matches = 0;
+
+      // Mobil/desktop taş boyutları
+      const isMobile = window.innerWidth < 768;
+      const tileWidth = isMobile ? 50 : 70;
+      const tileHeight = isMobile ? 60 : 90;
+      const zOffset = isMobile ? 3 : 4;
 
       // Taşları oluştur
       layout.forEach((pos, idx) => {
@@ -904,8 +1309,8 @@
         div.textContent = tile.word;
         
         // Pozisyonlama (3D efekti için)
-        const left = pos.x * 70 - pos.z * 4;
-        const top = pos.y * 90 - pos.z * 4;
+        const left = pos.x * tileWidth - pos.z * zOffset;
+        const top = pos.y * tileHeight - pos.z * zOffset;
         const zIndex = pos.z * 100 + pos.y * 10 + pos.x;
         
         div.style.left = left + 'px';
@@ -923,8 +1328,8 @@
       const maxX = Math.max(...layout.map(p => p.x));
       const maxY = Math.max(...layout.map(p => p.y));
       const maxZ = Math.max(...layout.map(p => p.z));
-      boardEl.style.width = (maxX * 70 + 80 + maxZ * 4) + 'px';
-      boardEl.style.height = (maxY * 90 + 100 + maxZ * 4) + 'px';
+      boardEl.style.width = (maxX * tileWidth + (isMobile ? 60 : 80) + maxZ * zOffset) + 'px';
+      boardEl.style.height = (maxY * tileHeight + (isMobile ? 70 : 100) + maxZ * zOffset) + 'px';
 
       updateTileStates();
       updateUI();
@@ -1041,6 +1446,7 @@
       const playerName = localStorage.getItem(NAME_KEY) || 'Oyuncu';
       const lang = langSelect.value;
       const level = levelSelect.value;
+      const tileLayout = tilesSelect.value;
       const timeLimit = parseInt(timeSelect.value);
 
       if (won) {
@@ -1053,6 +1459,7 @@
           moves: moves,
           lang: lang,
           level: level,
+          tiles: tileLayout,
           time: timeLimit === 0 ? 'Sınırsız' : formatTime(timeLimit - timeRemaining),
           date: new Date().toISOString()
         });
@@ -1113,8 +1520,11 @@
         return;
       }
 
-      const levelNames = {easy: 'Kolay', medium: 'Orta', hard: 'Zor'};
-      const langNames = {en: '🇬🇧', kr: '🇰🇷'};
+      const levelNames = {
+        a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2', c1: 'C1', c2: 'C2',
+        easy: 'Kolay', medium: 'Orta', hard: 'Zor'
+      };
+      const langNames = {en: '🇬🇧', es: '🇪🇸', kr: '🇰🇷'};
 
       scoreListEl.innerHTML = scores.map((s, i) => `
         <div class="score-item ${i === 0 ? 'top' : ''}">
@@ -1124,6 +1534,7 @@
           </div>
           <div class="score-details">
             <span>${langNames[s.lang]} ${levelNames[s.level]}</span>
+            <span>📊 ${levelNames[s.tiles] || s.tiles || ''}</span>
             <span>⏱️ ${s.time}</span>
             <span>👣 ${s.moves} hamle</span>
           </div>
@@ -1141,6 +1552,34 @@
     // ===== Buton Event Listeners =====
     startBtn.addEventListener('click', startGame);
     resetBtn.addEventListener('click', startGame);
+
+    // ===== Mobil için resize handler =====
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (tiles.length > 0) {
+          const isMobile = window.innerWidth < 768;
+          const tileWidth = isMobile ? 50 : 70;
+          const tileHeight = isMobile ? 60 : 90;
+          const zOffset = isMobile ? 3 : 4;
+          
+          const maxX = Math.max(...tiles.map(t => t.x));
+          const maxY = Math.max(...tiles.map(t => t.y));
+          const maxZ = Math.max(...tiles.map(t => t.z));
+          
+          boardEl.style.width = (maxX * tileWidth + (isMobile ? 60 : 80) + maxZ * zOffset) + 'px';
+          boardEl.style.height = (maxY * tileHeight + (isMobile ? 70 : 100) + maxZ * zOffset) + 'px';
+          
+          tiles.forEach(tile => {
+            const left = tile.x * tileWidth - tile.z * zOffset;
+            const top = tile.y * tileHeight - tile.z * zOffset;
+            tile.element.style.left = left + 'px';
+            tile.element.style.top = top + 'px';
+          });
+        }
+      }, 100);
+    });
 
     // ===== İlk Yükleme =====
     getPlayerName();
