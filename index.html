@@ -3,378 +3,913 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kelimeli Mahjong - Zamanlı, Puanlı, İsim & Kelime Yöneticili</title>
+  <title>Kelimeli Mahjong - Gerçek Mahjong Mekaniği</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; padding:12px; }
-    h1 { margin:0 0 12px; }
-    .layout { max-width: 1200px; margin: 0 auto; display:grid; grid-template-columns: 320px 1fr; gap:12px; }
-    @media (max-width: 900px){ .layout{ grid-template-columns: 1fr; } }
-
-    .panel { background:#020617; border:1px solid #1f2933; border-radius:16px; padding:10px; }
-    .panel h3{ margin:4px 0 8px; }
-    .best-table{ width:100%; border-collapse:separate; border-spacing:0 6px; font-size:12px; }
-    .best-table th{ text-align:left; color:#94a3b8; font-weight:600; padding:0 6px 4px; }
-    .best-row{ background:#0b1220; border:1px solid #1f2933; border-radius:12px; }
-    .best-row td{ padding:6px 8px; }
-    .best-row.first{ outline:2px solid #22c55e; box-shadow:0 0 0 2px rgba(34,197,94,.2) inset; }
-
-    .toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
-    select, button, input { background:#111827; color:#e5e7eb; border:1px solid #334155; border-radius:10px; padding:10px 12px; font-size:14px; }
-    button { cursor:pointer; }
-    button.primary { background:#2563eb; border-color:#2563eb; }
-    button.warn { background:#7c2d12; border-color:#7c2d12; }
-    button.ghost { background:#020617; }
-    button:disabled { opacity:0.6; cursor:not-allowed; }
-    .stats { display:flex; gap:12px; flex-wrap:wrap; }
-
-    /* Mobilde üstte sabit kontrol barı */
-    .topbar{ position:sticky; top:0; z-index:20; background:#020617; border:1px solid #1f2933; border-radius:16px; padding:8px; margin-bottom:10px; }
-
-    .board { display:grid; gap:8px; }
-    .tile { background:#020617; border:1px solid #1f2933; border-radius:14px; padding:12px; min-height:64px; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:700; font-size:18px; user-select:none; transition: transform .1s ease, background .2s ease, border .2s ease; }
-    .tile:hover { transform: translateY(-1px); }
-    .tile.hidden { background:#020617; color:transparent; }
-    .tile.revealed { background:#0b1220; border-color:#3b82f6; }
-    .tile.matched { background:#052e16; border-color:#22c55e; color:#86efac; }
-    .footer { margin-top:12px; color:#94a3b8; }
-    .success { color:#22c55e; }
-    .danger { color:#f87171; }
-    .grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
-
-    .namebar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
-    .badge{ background:#0b1220; border:1px solid #1f2933; border-radius:999px; padding:6px 10px; font-size:12px; }
-
-    /* Modal */
-    .modal-backdrop{ position:fixed; inset:0; background:rgba(2,6,23,.7); display:none; align-items:center; justify-content:center; z-index:50; }
-    .modal{ background:#020617; border:1px solid #1f2933; border-radius:16px; padding:16px; width:min(520px, 92vw); }
-    .modal h3{ margin:0 0 8px; }
-    .modal .row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
-    .modal .row > *{ flex:1; }
-    .modal .actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:12px; }
-
-    /* Kelime listesi */
-    .word-list{ max-height:220px; overflow:auto; border:1px solid #1f2933; border-radius:12px; padding:8px; }
-    .word-item{ display:flex; gap:8px; align-items:center; justify-content:space-between; background:#0b1220; border:1px solid #1f2933; border-radius:10px; padding:6px 8px; margin-bottom:6px; font-size:13px; }
-    .word-item small{ color:#94a3b8; }
-
-    @media (max-width: 600px){
-      h1{ font-size:20px; }
-      .tile{ font-size:16px; min-height:56px; }
-      .grid{ grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
+      color: #e5e7eb; 
+      margin: 0; 
+      padding: 20px; 
+      min-height: 100vh;
+    }
+    
+    .container { max-width: 1400px; margin: 0 auto; }
+    
+    h1 { 
+      text-align: center; 
+      margin: 0 0 20px; 
+      font-size: 2.5em;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .layout { 
+      display: grid; 
+      grid-template-columns: 280px 1fr 280px; 
+      gap: 20px; 
+      align-items: start;
+    }
+    
+    @media (max-width: 1200px) { 
+      .layout { grid-template-columns: 1fr; } 
+      .sidebar { max-width: 500px; margin: 0 auto; }
+    }
+    
+    .panel { 
+      background: rgba(15, 23, 42, 0.8); 
+      border: 1px solid #334155; 
+      border-radius: 16px; 
+      padding: 20px; 
+      backdrop-filter: blur(10px);
+    }
+    
+    .panel h3 { 
+      margin: 0 0 16px; 
+      font-size: 1.3em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* Kontroller */
+    .controls { display: flex; flex-direction: column; gap: 12px; }
+    .control-group { display: flex; flex-direction: column; gap: 6px; }
+    .control-group label { 
+      font-size: 0.85em; 
+      color: #94a3b8; 
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    select, button, input { 
+      background: #1e293b; 
+      color: #e5e7eb; 
+      border: 1px solid #475569; 
+      border-radius: 10px; 
+      padding: 12px 16px; 
+      font-size: 1em;
+      width: 100%;
+      transition: all 0.2s;
+    }
+    
+    select:hover, input:hover { border-color: #64748b; }
+    
+    button { 
+      cursor: pointer; 
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    button:hover:not(:disabled) { 
+      transform: translateY(-2px); 
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    button.primary { 
+      background: linear-gradient(135deg, #3b82f6, #2563eb); 
+      border: none;
+      color: white;
+    }
+    
+    button.secondary { 
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed); 
+      border: none;
+      color: white;
+    }
+    
+    button.warn { 
+      background: linear-gradient(135deg, #dc2626, #b91c1c); 
+      border: none;
+      color: white;
+    }
+    
+    button:disabled { 
+      opacity: 0.5; 
+      cursor: not-allowed; 
+      transform: none !important;
+    }
+    
+    /* İstatistikler */
+    .stats { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 12px; 
+      margin-top: 16px;
+    }
+    
+    .stat-box { 
+      background: #0f172a; 
+      border: 1px solid #334155; 
+      border-radius: 12px; 
+      padding: 12px; 
+      text-align: center;
+    }
+    
+    .stat-label { 
+      font-size: 0.75em; 
+      color: #94a3b8; 
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .stat-value { 
+      font-size: 1.8em; 
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Skorlar */
+    .score-list { 
+      max-height: 400px; 
+      overflow-y: auto; 
+    }
+    
+    .score-item { 
+      background: #0f172a; 
+      border: 1px solid #334155; 
+      border-radius: 10px; 
+      padding: 12px; 
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    
+    .score-item:hover { 
+      border-color: #3b82f6; 
+      transform: translateX(4px);
+    }
+    
+    .score-item.top { 
+      border: 2px solid #22c55e;
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+    }
+    
+    .score-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    
+    .score-name { 
+      font-weight: 700; 
+      font-size: 1.1em;
+      color: #3b82f6;
+    }
+    
+    .score-points { 
+      font-size: 1.3em; 
+      font-weight: 700;
+      color: #22c55e;
+    }
+    
+    .score-details { 
+      font-size: 0.85em; 
+      color: #94a3b8; 
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    /* Oyun Tahtası */
+    .board-container { 
+      position: relative; 
+      min-height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .board { 
+      position: relative;
+      display: inline-block;
+    }
+    
+    .tile { 
+      position: absolute;
+      width: 80px;
+      height: 100px;
+      background: linear-gradient(145deg, #f8fafc, #e2e8f0);
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: #0f172a;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+      box-shadow: 
+        0 2px 4px rgba(0,0,0,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+      padding: 8px;
+      word-wrap: break-word;
+      line-height: 1.2;
+    }
+    
+    .tile:hover:not(.matched):not(.blocked) { 
+      transform: translateY(-4px) scale(1.05); 
+      border-color: #3b82f6;
+      box-shadow: 
+        0 8px 16px rgba(59, 130, 246, 0.3),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+      z-index: 10000 !important;
+    }
+    
+    .tile.selected { 
+      background: linear-gradient(145deg, #dbeafe, #bfdbfe);
+      border-color: #3b82f6;
+      border-width: 3px;
+      transform: translateY(-6px) scale(1.08);
+      box-shadow: 
+        0 12px 24px rgba(59, 130, 246, 0.4),
+        inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+    
+    .tile.matched { 
+      background: linear-gradient(145deg, #d1fae5, #a7f3d0);
+      border-color: #22c55e;
+      color: #065f46;
+      animation: matchPulse 0.5s ease;
+      pointer-events: none;
+    }
+    
+    .tile.blocked { 
+      opacity: 0.4;
+      cursor: not-allowed;
+      filter: grayscale(0.6);
+    }
+    
+    @keyframes matchPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+    
+    /* Durum mesajları */
+    .status { 
+      text-align: center; 
+      margin-top: 20px; 
+      font-size: 1.2em;
+      font-weight: 600;
+      min-height: 30px;
+    }
+    
+    .success { color: #22c55e; }
+    .danger { color: #ef4444; }
+    .info { color: #3b82f6; }
+    
+    /* Yardım */
+    .help { 
+      background: rgba(59, 130, 246, 0.1); 
+      border: 1px solid #3b82f6; 
+      border-radius: 10px; 
+      padding: 12px; 
+      font-size: 0.9em;
+      line-height: 1.6;
+      margin-top: 16px;
+    }
+    
+    .help-title { 
+      font-weight: 700; 
+      color: #3b82f6; 
+      margin-bottom: 8px;
+    }
+    
+    .badge {
+      display: inline-block;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.75em;
+      font-weight: 600;
+      margin: 2px;
+    }
+    
+    .name-display {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .player-name {
+      font-weight: 700;
+      color: #3b82f6;
+      font-size: 1.1em;
     }
   </style>
 </head>
 <body>
-  <div class="layout">
-    <!-- Sol: En İyiler -->
-    <aside class="panel">
-      <h3>🏆 En İyiler</h3>
-      <p style="color:#94a3b8; font-size:13px; margin:0 0 8px;">İsim • Dil • Seviye • Süre • Puan</p>
-      <table class="best-table">
-        <thead>
-          <tr>
-            <th>#</th><th>İsim</th><th>Dil</th><th>Seviye</th><th>Süre</th><th>Puan</th>
-          </tr>
-        </thead>
-        <tbody id="bestBody"></tbody>
-      </table>
-    </aside>
-
-    <!-- Sağ: Oyun -->
-    <main class="app">
-      <div class="topbar">
-        <h1>🀄 Kelimeli Mahjong — Zamanlı & Puanlı</h1>
-        <div class="namebar">
-          <span class="badge">Oyuncu:</span>
-          <strong id="playerNameLabel">—</strong>
-          <button id="changeNameBtn" class="ghost">İsmi Değiştir</button>
-          <button id="manageWordsBtn" class="ghost">Kelimeleri Yönet</button>
+  <div class="container">
+    <h1>🀄 Kelimeli Mahjong</h1>
+    
+    <div class="layout">
+      <!-- Sol Panel: Kontroller -->
+      <aside class="sidebar panel">
+        <h3>⚙️ Ayarlar</h3>
+        
+        <div class="name-display">
+          <span class="player-name" id="playerNameLabel">Oyuncu</span>
+          <button id="changeNameBtn" style="width: auto; padding: 6px 12px; font-size: 0.85em;">Değiştir</button>
         </div>
-        <p>Seviyeler: <b>8</b> / <b>12</b> / <b>16</b> / <b>20</b> / <b>24</b> çift. Her oyun kelimeler <b>havuzdan rastgele</b> seçilir. Doğru = +100, Yanlış = -25.</p>
-
-        <div class="toolbar">
-        <select id="langSel">
-          <option value="en">İngilizce</option>
-          <option value="ko">Korece</option>
-        </select>
-        <select id="pairsSel">
-          <option value="8">8 Çift</option>
-          <option value="12">12 Çift</option>
-          <option value="16">16 Çift</option>
-          <option value="20">20 Çift</option>
-          <option value="24">24 Çift</option>
-        </select>
-        <button id="startBtn" class="primary">Başlat</button>
-        <button id="hintBtn" class="ghost">Hint (-20p)</button>
-        <span class="badge">Skor: <b id="score">0</b></span>
-        <span class="badge">Süre: <b id="time">120</b></span>
-        <span class="badge">Hamle: <b id="moves">0</b></span>
-        <span class="badge">Hesap: <b id="accountScore">0</b></span>
-      </div>
-            <div>⭐ <strong id="score">0</strong></div>
-            <div>🎯 <strong id="matches">0</strong></div>
-            <div>👣 <strong id="moves">0</strong></div>
+        
+        <div class="controls">
+          <div class="control-group">
+            <label>Dil</label>
+            <select id="langSelect">
+              <option value="en">🇬🇧 İngilizce</option>
+              <option value="kr">🇰🇷 Korece</option>
+            </select>
+          </div>
+          
+          <div class="control-group">
+            <label>Seviye</label>
+            <select id="levelSelect">
+              <option value="easy">Kolay (18 çift)</option>
+              <option value="medium">Orta (36 çift)</option>
+              <option value="hard">Zor (72 çift)</option>
+            </select>
+          </div>
+          
+          <div class="control-group">
+            <label>Süre</label>
+            <select id="timeSelect">
+              <option value="180">3 Dakika</option>
+              <option value="300">5 Dakika</option>
+              <option value="600">10 Dakika</option>
+              <option value="0">Sınırsız</option>
+            </select>
+          </div>
+          
+          <button class="primary" id="startBtn">🎮 Oyunu Başlat</button>
+          <button class="secondary" id="hintBtn" disabled>💡 İpucu</button>
+          <button class="warn" id="resetBtn" disabled>🔄 Yeniden Başlat</button>
+        </div>
+        
+        <div class="stats">
+          <div class="stat-box">
+            <div class="stat-label">Süre</div>
+            <div class="stat-value" id="timeLeft">0:00</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Puan</div>
+            <div class="stat-value" id="score">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Eşleşme</div>
+            <div class="stat-value" id="matches">0/0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Hamle</div>
+            <div class="stat-value" id="moves">0</div>
           </div>
         </div>
-      </div>
-
-      <div id="board" class="board grid"></div>
-      <div class="footer" id="status"></div>
-    </main>
-  </div>
-
-  <!-- İsim Modal -->
-  <div id="nameModal" class="modal-backdrop">
-    <div class="modal">
-      <h3>Oyuncu Adı</h3>
-      <p style="color:#94a3b8; font-size:13px;">Skor tablosunda görünecek ismini yaz.</p>
-      <div class="row">
-        <input id="nameInput" placeholder="İsmin..." />
-      </div>
-      <div class="actions">
-        <button id="nameCancel" class="ghost">Vazgeç</button>
-        <button id="nameSave" class="primary">Kaydet</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Kelime Yönetimi Modal -->
-  <div id="wordsModal" class="modal-backdrop">
-    <div class="modal">
-      <h3>Kelime Havuzu</h3>
-      <p style="color:#94a3b8; font-size:13px;">Kendi kelimelerini ekle/sil. Oyun bu havuzdan rastgele seçecek.</p>
-      <div class="row">
-        <select id="wordLangSelect">
-          <option value="en">İngilizce</option>
-          <option value="kr">Korece</option>
-        </select>
-      </div>
-      <div class="row">
-        <input id="wordA" placeholder="Yabancı kelime (örn: apple / 사과)" />
-        <input id="wordB" placeholder="Türkçe karşılığı (örn: elma)" />
-      </div>
-      <div class="row">
-        <button id="addWordBtn" class="primary">Ekle</button>
-        <button id="clearCustomBtn" class="warn">Özel Kelimeleri Temizle</button>
-      </div>
-      <div class="word-list" id="wordList"></div>
-      <div class="actions">
-        <button id="wordsClose" class="ghost">Kapat</button>
-      </div>
+        
+        <div class="help">
+          <div class="help-title">📖 Nasıl Oynanır?</div>
+          Sadece <strong>açık</strong> (üzerinde taş olmayan) ve <strong>yan kenarları boş</strong> taşlar seçilebilir. Aynı kelimeleri eşleştirin!
+          <div style="margin-top:8px">
+            <span class="badge">✓ Doğru: +100</span>
+            <span class="badge">✗ Yanlış: -25</span>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- Orta Panel: Oyun Tahtası -->
+      <main class="panel">
+        <div class="board-container">
+          <div id="board" class="board"></div>
+        </div>
+        <div class="status" id="status"></div>
+      </main>
+      
+      <!-- Sağ Panel: En İyi Skorlar -->
+      <aside class="sidebar panel">
+        <h3>🏆 En İyi Skorlar</h3>
+        <div class="score-list" id="scoreList">
+          <div style="text-align: center; color: #64748b; padding: 20px;">
+            Henüz skor yok
+          </div>
+        </div>
+        <button class="warn" id="clearScoresBtn" style="margin-top: 12px;">🗑️ Skorları Temizle</button>
+      </aside>
     </div>
   </div>
 
   <script>
-  // ====== Helpers ======
-  function $(id){ return document.getElementById(id); }
+    // ===== KELİME HAVUZU (100+ kelime) =====
+    const wordPool = {
+      en: [
+        'apple', 'book', 'water', 'sun', 'dog', 'house', 'travel', 'friend', 'music', 'money',
+        'city', 'food', 'work', 'school', 'time', 'day', 'night', 'family', 'love', 'game',
+        'learn', 'write', 'read', 'think', 'speak', 'listen', 'walk', 'run', 'jump', 'sleep',
+        'dream', 'hope', 'peace', 'truth', 'light', 'dark', 'fire', 'earth', 'wind', 'rain',
+        'snow', 'cloud', 'star', 'moon', 'tree', 'flower', 'bird', 'fish', 'cat', 'horse',
+        'river', 'ocean', 'mountain', 'forest', 'desert', 'island', 'bridge', 'road', 'car', 'train',
+        'plane', 'ship', 'bike', 'phone', 'computer', 'camera', 'watch', 'key', 'door', 'window',
+        'chair', 'table', 'bed', 'lamp', 'mirror', 'picture', 'pen', 'paper', 'letter', 'story',
+        'song', 'dance', 'paint', 'draw', 'play', 'teach', 'help', 'smile', 'laugh', 'cry',
+        'happy', 'sad', 'angry', 'calm', 'brave', 'strong', 'smart', 'kind', 'good', 'bad',
+        'big', 'small', 'fast', 'slow', 'hot', 'cold', 'new', 'old', 'young', 'free'
+      ],
+      kr: [
+        '사과', '책', '물', '해', '개', '집', '여행', '친구', '음악', '돈',
+        '도시', '음식', '일', '학교', '시간', '낮', '밤', '가족', '사랑', '게임',
+        '배우다', '쓰다', '읽다', '생각', '말하다', '듣다', '걷다', '달리다', '점프', '자다',
+        '꿈', '희망', '평화', '진실', '빛', '어둠', '불', '땅', '바람', '비',
+        '눈', '구름', '별', '달', '나무', '꽃', '새', '물고기', '고양이', '말',
+        '강', '바다', '산', '숲', '사막', '섬', '다리', '길', '차', '기차',
+        '비행기', '배', '자전거', '전화', '컴퓨터', '카메라', '시계', '열쇠', '문', '창문',
+        '의자', '테이블', '침대', '램프', '거울', '그림', '펜', '종이', '편지', '이야기',
+        '노래', '춤', '그리다', '그리다', '놀다', '가르치다', '돕다', '미소', '웃다', '울다',
+        '행복', '슬픔', '화남', '차분', '용감', '강한', '똑똑', '친절', '좋은', '나쁜',
+        '큰', '작은', '빠른', '느린', '뜨거운', '차가운', '새로운', '오래된', '젊은', '자유'
+      ]
+    };
 
-  // ====== State ======
-  let playerName = localStorage.getItem('playerName') || '';
-  let totalAccountScore = Number(localStorage.getItem('accountScore')||0);
-  let currentLang = 'en';
-  let pairs = 8;
-  let timeLeft = 120;
-  let timer = null;
-  let first = null;
-  let lock = false;
-  let moves = 0;
-  let score = 0;
-  let streak = 0; // hatasız seri
-  let mistakeStreak = 0; // arka arkaya hata
-  let hintActiveIndex = null;
+    // ===== MAHJONG DÜZENLERİ =====
+    const layouts = {
+      easy: [ // 18 çift = 36 taş
+        // Katman 0 (taban)
+        {x:1,y:0,z:0},{x:2,y:0,z:0},{x:3,y:0,z:0},{x:4,y:0,z:0},{x:5,y:0,z:0},{x:6,y:0,z:0},
+        {x:1,y:1,z:0},{x:2,y:1,z:0},{x:3,y:1,z:0},{x:4,y:1,z:0},{x:5,y:1,z:0},{x:6,y:1,z:0},
+        {x:1,y:2,z:0},{x:2,y:2,z:0},{x:3,y:2,z:0},{x:4,y:2,z:0},{x:5,y:2,z:0},{x:6,y:2,z:0},
+        {x:1,y:3,z:0},{x:2,y:3,z:0},{x:3,y:3,z:0},{x:4,y:3,z:0},{x:5,y:3,z:0},{x:6,y:3,z:0},
+        // Katman 1
+        {x:2,y:1,z:1},{x:3,y:1,z:1},{x:4,y:1,z:1},{x:5,y:1,z:1},
+        {x:2,y:2,z:1},{x:3,y:2,z:1},{x:4,y:2,z:1},{x:5,y:2,z:1},
+        // Katman 2
+        {x:3,y:1,z:2},{x:4,y:1,z:2},{x:3,y:2,z:2},{x:4,y:2,z:2}
+      ],
+      medium: [ // 36 çift = 72 taş
+        // Katman 0
+        {x:0,y:1,z:0},{x:1,y:1,z:0},{x:2,y:1,z:0},{x:3,y:1,z:0},{x:4,y:1,z:0},{x:5,y:1,z:0},{x:6,y:1,z:0},{x:7,y:1,z:0},
+        {x:0,y:2,z:0},{x:1,y:2,z:0},{x:2,y:2,z:0},{x:3,y:2,z:0},{x:4,y:2,z:0},{x:5,y:2,z:0},{x:6,y:2,z:0},{x:7,y:2,z:0},
+        {x:0,y:3,z:0},{x:1,y:3,z:0},{x:2,y:3,z:0},{x:3,y:3,z:0},{x:4,y:3,z:0},{x:5,y:3,z:0},{x:6,y:3,z:0},{x:7,y:3,z:0},
+        {x:0,y:4,z:0},{x:1,y:4,z:0},{x:2,y:4,z:0},{x:3,y:4,z:0},{x:4,y:4,z:0},{x:5,y:4,z:0},{x:6,y:4,z:0},{x:7,y:4,z:0},
+        // Katman 1
+        {x:1,y:1,z:1},{x:2,y:1,z:1},{x:3,y:1,z:1},{x:4,y:1,z:1},{x:5,y:1,z:1},{x:6,y:1,z:1},
+        {x:1,y:2,z:1},{x:2,y:2,z:1},{x:3,y:2,z:1},{x:4,y:2,z:1},{x:5,y:2,z:1},{x:6,y:2,z:1},
+        {x:1,y:3,z:1},{x:2,y:3,z:1},{x:3,y:3,z:1},{x:4,y:3,z:1},{x:5,y:3,z:1},{x:6,y:3,z:1},
+        {x:1,y:4,z:1},{x:2,y:4,z:1},{x:3,y:4,z:1},{x:4,y:4,z:1},{x:5,y:4,z:1},{x:6,y:4,z:1},
+        // Katman 2
+        {x:2,y:2,z:2},{x:3,y:2,z:2},{x:4,y:2,z:2},{x:5,y:2,z:2},
+        {x:2,y:3,z:2},{x:3,y:3,z:2},{x:4,y:3,z:2},{x:5,y:3,z:2},
+        // Katman 3
+        {x:3,y:2,z:3},{x:4,y:2,z:3},{x:3,y:3,z:3},{x:4,y:3,z:3}
+      ],
+      hard: [ // 72 çift = 144 taş (klasik mahjong)
+        // Katman 0
+        {x:2,y:0,z:0},{x:3,y:0,z:0},{x:4,y:0,z:0},{x:5,y:0,z:0},{x:6,y:0,z:0},{x:7,y:0,z:0},{x:8,y:0,z:0},{x:9,y:0,z:0},{x:10,y:0,z:0},
+        {x:1,y:1,z:0},{x:2,y:1,z:0},{x:3,y:1,z:0},{x:4,y:1,z:0},{x:5,y:1,z:0},{x:6,y:1,z:0},{x:7,y:1,z:0},{x:8,y:1,z:0},{x:9,y:1,z:0},{x:10,y:1,z:0},{x:11,y:1,z:0},
+        {x:0,y:2,z:0},{x:1,y:2,z:0},{x:2,y:2,z:0},{x:3,y:2,z:0},{x:4,y:2,z:0},{x:5,y:2,z:0},{x:6,y:2,z:0},{x:7,y:2,z:0},{x:8,y:2,z:0},{x:9,y:2,z:0},{x:10,y:2,z:0},{x:11,y:2,z:0},{x:12,y:2,z:0},
+        {x:0,y:3,z:0},{x:1,y:3,z:0},{x:2,y:3,z:0},{x:3,y:3,z:0},{x:4,y:3,z:0},{x:5,y:3,z:0},{x:6,y:3,z:0},{x:7,y:3,z:0},{x:8,y:3,z:0},{x:9,y:3,z:0},{x:10,y:3,z:0},{x:11,y:3,z:0},{x:12,y:3,z:0},
+        {x:0,y:4,z:0},{x:1,y:4,z:0},{x:2,y:4,z:0},{x:3,y:4,z:0},{x:4,y:4,z:0},{x:5,y:4,z:0},{x:6,y:4,z:0},{x:7,y:4,z:0},{x:8,y:4,z:0},{x:9,y:4,z:0},{x:10,y:4,z:0},{x:11,y:4,z:0},{x:12,y:4,z:0},
+        {x:0,y:5,z:0},{x:1,y:5,z:0},{x:2,y:5,z:0},{x:3,y:5,z:0},{x:4,y:5,z:0},{x:5,y:5,z:0},{x:6,y:5,z:0},{x:7,y:5,z:0},{x:8,y:5,z:0},{x:9,y:5,z:0},{x:10,y:5,z:0},{x:11,y:5,z:0},{x:12,y:5,z:0},
+        {x:1,y:6,z:0},{x:2,y:6,z:0},{x:3,y:6,z:0},{x:4,y:6,z:0},{x:5,y:6,z:0},{x:6,y:6,z:0},{x:7,y:6,z:0},{x:8,y:6,z:0},{x:9,y:6,z:0},{x:10,y:6,z:0},{x:11,y:6,z:0},
+        {x:2,y:7,z:0},{x:3,y:7,z:0},{x:4,y:7,z:0},{x:5,y:7,z:0},{x:6,y:7,z:0},{x:7,y:7,z:0},{x:8,y:7,z:0},{x:9,y:7,z:0},{x:10,y:7,z:0},
+        // Katman 1
+        {x:2,y:1,z:1},{x:3,y:1,z:1},{x:4,y:1,z:1},{x:5,y:1,z:1},{x:6,y:1,z:1},{x:7,y:1,z:1},{x:8,y:1,z:1},{x:9,y:1,z:1},{x:10,y:1,z:1},
+        {x:2,y:2,z:1},{x:3,y:2,z:1},{x:4,y:2,z:1},{x:5,y:2,z:1},{x:6,y:2,z:1},{x:7,y:2,z:1},{x:8,y:2,z:1},{x:9,y:2,z:1},{x:10,y:2,z:1},
+        {x:2,y:3,z:1},{x:3,y:3,z:1},{x:4,y:3,z:1},{x:5,y:3,z:1},{x:6,y:3,z:1},{x:7,y:3,z:1},{x:8,y:3,z:1},{x:9,y:3,z:1},{x:10,y:3,z:1},
+        {x:2,y:4,z:1},{x:3,y:4,z:1},{x:4,y:4,z:1},{x:5,y:4,z:1},{x:6,y:4,z:1},{x:7,y:4,z:1},{x:8,y:4,z:1},{x:9,y:4,z:1},{x:10,y:4,z:1},
+        {x:2,y:5,z:1},{x:3,y:5,z:1},{x:4,y:5,z:1},{x:5,y:5,z:1},{x:6,y:5,z:1},{x:7,y:5,z:1},{x:8,y:5,z:1},{x:9,y:5,z:1},{x:10,y:5,z:1},
+        {x:2,y:6,z:1},{x:3,y:6,z:1},{x:4,y:6,z:1},{x:5,y:6,z:1},{x:6,y:6,z:1},{x:7,y:6,z:1},{x:8,y:6,z:1},{x:9,y:6,z:1},{x:10,y:6,z:1},
+        // Katman 2
+        {x:3,y:2,z:2},{x:4,y:2,z:2},{x:5,y:2,z:2},{x:6,y:2,z:2},{x:7,y:2,z:2},{x:8,y:2,z:2},{x:9,y:2,z:2},
+        {x:3,y:3,z:2},{x:4,y:3,z:2},{x:5,y:3,z:2},{x:6,y:3,z:2},{x:7,y:3,z:2},{x:8,y:3,z:2},{x:9,y:3,z:2},
+        {x:3,y:4,z:2},{x:4,y:4,z:2},{x:5,y:4,z:2},{x:6,y:4,z:2},{x:7,y:4,z:2},{x:8,y:4,z:2},{x:9,y:4,z:2},
+        {x:3,y:5,z:2},{x:4,y:5,z:2},{x:5,y:5,z:2},{x:6,y:5,z:2},{x:7,y:5,z:2},{x:8,y:5,z:2},{x:9,y:5,z:2},
+        // Katman 3
+        {x:4,y:3,z:3},{x:5,y:3,z:3},{x:6,y:3,z:3},{x:7,y:3,z:3},{x:8,y:3,z:3},
+        {x:4,y:4,z:3},{x:5,y:4,z:3},{x:6,y:4,z:3},{x:7,y:4,z:3},{x:8,y:4,z:3},
+        // Katman 4
+        {x:5,y:3,z:4},{x:6,y:3,z:4},{x:7,y:3,z:4},
+        {x:5,y:4,z:4},{x:6,y:4,z:4},{x:7,y:4,z:4},
+        // Katman 5 (tepe)
+        {x:6,y:3,z:5},{x:6,y:4,z:5}
+      ]
+    };
 
-  const board = $('board');
-  const scoreEl = $('score');
-  const timeEl = $('time');
-  const movesEl = $('moves');
-  const accountEl = $('accountScore');
+    // ===== DOM Elemanları =====
+    const langSelect = document.getElementById('langSelect');
+    const levelSelect = document.getElementById('levelSelect');
+    const timeSelect = document.getElementById('timeSelect');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const hintBtn = document.getElementById('hintBtn');
+    const boardEl = document.getElementById('board');
+    const scoreEl = document.getElementById('score');
+    const matchesEl = document.getElementById('matches');
+    const movesEl = document.getElementById('moves');
+    const timeLeftEl = document.getElementById('timeLeft');
+    const statusEl = document.getElementById('status');
+    const scoreListEl = document.getElementById('scoreList');
+    const clearScoresBtn = document.getElementById('clearScoresBtn');
+    const playerNameLabel = document.getElementById('playerNameLabel');
+    const changeNameBtn = document.getElementById('changeNameBtn');
 
-  function refreshStats(){
-    if(scoreEl) scoreEl.textContent = score;
-    if(timeEl) timeEl.textContent = timeLeft;
-    if(movesEl) movesEl.textContent = moves;
-    if(accountEl) accountEl.textContent = totalAccountScore;
-  }
-
-  // ====== Name ======
-  function askName(force=false){
-    if(playerName && !force) return;
-    const n = prompt('Oyuncu adını gir:');
-    if(n && n.trim()){
-      playerName = n.trim();
-      localStorage.setItem('playerName', playerName);
-      const nameBadge = $('nameBadge');
-      if(nameBadge) nameBadge.textContent = playerName;
-    }
-  }
-
-  const changeNameBtn = $('changeNameBtn');
-  if(changeNameBtn){ changeNameBtn.onclick = ()=>askName(true); }
-
-  // ====== Utils ======
-  function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
-  function nearSquareCols(n){ return Math.ceil(Math.sqrt(n)); }
-  function setGrid(n){ const cols = nearSquareCols(n); board.style.gridTemplateColumns = `repeat(${cols}, minmax(80px, 1fr))`; }
-
-  // ====== Words ======
-  const baseWords = {
-    en: [ ['apple','elma'],['book','kitap'],['car','araba'],['dog','köpek'],['water','su'],['house','ev'],['sun','güneş'],['moon','ay'],['tree','ağaç'],['road','yol'],['food','yemek'],['friend','arkadaş'],['music','müzik'],['city','şehir'],['school','okul'],['work','iş'],['time','zaman'],['money','para'],['game','oyun'],['love','sevgi'],['family','aile'],['world','dünya'],['night','gece'],['day','gün'] ],
-    ko: [ ['사과','elma'],['책','kitap'],['차','araba'],['개','köpek'],['물','su'],['집','ev'],['해','güneş'],['달','ay'],['나무','ağaç'],['길','yol'],['음식','yemek'],['친구','arkadaş'],['음악','müzik'],['도시','şehir'],['학교','okul'],['일','iş'],['시간','zaman'],['돈','para'],['게임','oyun'],['사랑','sevgi'],['가족','aile'],['세계','dünya'],['밤','gece'],['낮','gün'] ]
-  };
-
-  function getPool(){
-    const custom = JSON.parse(localStorage.getItem('customWords')||'{}');
-    const arr = (baseWords[currentLang]||[]).concat(custom[currentLang]||[]);
-    return arr;
-  }
-
-  // ====== Build ======
-  function startGame(){
-    clearInterval(timer);
-    first = null; lock = false; moves = 0; score = 0; streak = 0; mistakeStreak = 0; hintActiveIndex = null;
-    timeLeft = 120;
-    refreshStats();
-
-    const pool = getPool();
-    if(pool.length < pairs){ alert('Yeterli kelime yok. Kelimeleri Yönet kısmından ekleyebilirsin.'); return; }
-
-    const chosen = shuffle(pool.slice()).slice(0, pairs);
+    // ===== Oyun Durumu =====
     let tiles = [];
-    chosen.forEach((w,i)=>{
-      tiles.push({ key:i, text:w[0] });
-      tiles.push({ key:i, text:w[1] });
+    let selectedTile = null;
+    let score = 0;
+    let moves = 0;
+    let matches = 0;
+    let totalPairs = 0;
+    let gameActive = false;
+    let timer = null;
+    let timeRemaining = 0;
+    const SCORES_KEY = 'mahjong_scores_v3';
+    const NAME_KEY = 'mahjong_player_name';
+
+    // ===== Yardımcı Fonksiyonlar =====
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function formatTime(seconds) {
+      if (seconds === 0) return '∞';
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // ===== İsim Yönetimi =====
+    function getPlayerName() {
+      let name = localStorage.getItem(NAME_KEY);
+      if (!name) {
+        name = prompt('Oyuncu adınızı girin:', 'Oyuncu') || 'Oyuncu';
+        localStorage.setItem(NAME_KEY, name);
+      }
+      playerNameLabel.textContent = name;
+      return name;
+    }
+
+    changeNameBtn.addEventListener('click', () => {
+      const name = prompt('Yeni oyuncu adını girin:', localStorage.getItem(NAME_KEY) || 'Oyuncu');
+      if (name) {
+        localStorage.setItem(NAME_KEY, name);
+        playerNameLabel.textContent = name;
+      }
     });
-    tiles = shuffle(tiles);
 
-    board.innerHTML='';
-    setGrid(tiles.length);
-    tiles.forEach((t,idx)=>{
-      const d = document.createElement('div');
-      d.className = 'tile hidden';
-      d.dataset.key = t.key;
-      d.dataset.index = idx;
-      d.textContent = t.text;
-      d.onclick = ()=>onPick(d);
-      board.appendChild(d);
-    });
+    // ===== Taş Kontrolleri (Mahjong Kuralları) =====
+    function isTileBlocked(tile) {
+      // Taş üzerinde başka taş var mı kontrol et
+      const above = tiles.find(t => 
+        !t.matched && 
+        t.z === tile.z + 1 &&
+        Math.abs(t.x - tile.x) <= 0.5 &&
+        Math.abs(t.y - tile.y) <= 0.5
+      );
+      if (above) return true;
 
-    timer = setInterval(()=>{
-      timeLeft--; refreshStats();
-      if(timeLeft<=0){ endGame(); }
-    },1000);
-  }
+      // Yan taraflar açık mı kontrol et
+      const leftBlocked = tiles.some(t => 
+        !t.matched && 
+        t.z === tile.z &&
+        t.x === tile.x - 1 &&
+        t.y === tile.y
+      );
+      const rightBlocked = tiles.some(t => 
+        !t.matched && 
+        t.z === tile.z &&
+        t.x === tile.x + 1 &&
+        t.y === tile.y
+      );
 
-  // ====== Scoring Rules ======
-  function applyMatch(){
-    if(streak>=1){ score += 30; } else { score += 15; }
-    streak++; mistakeStreak = 0;
-  }
-  function applyMistake(){
-    if(mistakeStreak>=1){ score -= 10; } else { score -= 5; }
-    mistakeStreak++; streak = 0;
-  }
+      return leftBlocked && rightBlocked;
+    }
 
-  // ====== Hint ======
-  function useHint(){
-    if(score < 20){ alert('Hint için en az 20 puan gerekir.'); return; }
-    if(hintActiveIndex !== null){ alert('Zaten bir hint açık.'); return; }
-    score -= 20; refreshStats();
-    const tiles = [...document.querySelectorAll('.tile')].filter(t=>!t.classList.contains('matched'));
-    if(tiles.length===0) return;
-    const pick = tiles[Math.floor(Math.random()*tiles.length)];
-    hintActiveIndex = pick.dataset.index;
-    pick.classList.remove('hidden'); pick.classList.add('revealed');
-    setTimeout(()=>{
-      if(hintActiveIndex !== null){ pick.classList.add('hidden'); pick.classList.remove('revealed'); hintActiveIndex = null; }
-    }, 1500);
-  }
+    function updateTileStates() {
+      tiles.forEach(tile => {
+        if (!tile.matched) {
+          const blocked = isTileBlocked(tile);
+          tile.element.classList.toggle('blocked', blocked);
+        }
+      });
+    }
 
-  // ====== Gameplay ======
-  function onPick(el){
-    if(lock || el.classList.contains('matched') || el === first) return;
-    el.classList.remove('hidden'); el.classList.add('revealed');
+    // ===== Oyun Kurulumu =====
+    function setupGame() {
+      // Ayarları al
+      const lang = langSelect.value;
+      const level = levelSelect.value;
+      const layout = layouts[level];
+      totalPairs = layout.length / 2;
 
-    if(first===null){ first = el; return; }
+      // Kelimeleri seç
+      const words = shuffle([...wordPool[lang]]).slice(0, totalPairs);
+      const tileWords = [];
+      words.forEach(word => {
+        tileWords.push(word, word); // Her kelimeden 2 tane
+      });
+      shuffle(tileWords);
 
-    moves++; refreshStats();
-    const second = el;
+      // Tahtayı temizle
+      boardEl.innerHTML = '';
+      tiles = [];
+      selectedTile = null;
+      score = 0;
+      moves = 0;
+      matches = 0;
 
-    if(first.dataset.key === second.dataset.key){
-      first.classList.add('matched'); second.classList.add('matched');
-      first.classList.remove('revealed'); second.classList.remove('revealed');
-      applyMatch();
+      // Taşları oluştur
+      layout.forEach((pos, idx) => {
+        const tile = {
+          x: pos.x,
+          y: pos.y,
+          z: pos.z,
+          word: tileWords[idx],
+          matched: false,
+          element: null
+        };
 
-      if(hintActiveIndex !== null && (first.dataset.index===hintActiveIndex || second.dataset.index===hintActiveIndex)){
-        score += 10; hintActiveIndex = null;
+        const div = document.createElement('div');
+        div.className = 'tile';
+        div.textContent = tile.word;
+        
+        // Pozisyonlama (3D efekti için)
+        const left = pos.x * 70 - pos.z * 4;
+        const top = pos.y * 90 - pos.z * 4;
+        const zIndex = pos.z * 100 + pos.y * 10 + pos.x;
+        
+        div.style.left = left + 'px';
+        div.style.top = top + 'px';
+        div.style.zIndex = zIndex;
+
+        div.addEventListener('click', () => onTileClick(tile));
+        
+        tile.element = div;
+        tiles.push(tile);
+        boardEl.appendChild(div);
+      });
+
+      // Tahta boyutunu ayarla
+      const maxX = Math.max(...layout.map(p => p.x));
+      const maxY = Math.max(...layout.map(p => p.y));
+      const maxZ = Math.max(...layout.map(p => p.z));
+      boardEl.style.width = (maxX * 70 + 80 + maxZ * 4) + 'px';
+      boardEl.style.height = (maxY * 90 + 100 + maxZ * 4) + 'px';
+
+      updateTileStates();
+      updateUI();
+    }
+
+    // ===== Taş Tıklama =====
+    function onTileClick(tile) {
+      if (!gameActive || tile.matched || isTileBlocked(tile)) return;
+
+      if (selectedTile === tile) {
+        // Aynı taşa tekrar tıklandı, seçimi kaldır
+        tile.element.classList.remove('selected');
+        selectedTile = null;
+        return;
       }
 
-      refreshStats();
-      first = null;
-      checkWin();
-    } else {
-      applyMistake(); refreshStats();
-      lock = true;
-      setTimeout(()=>{
-        first.classList.add('hidden'); second.classList.add('hidden');
-        first.classList.remove('revealed'); second.classList.remove('revealed');
-        first = null; lock = false;
-      }, 700);
+      if (!selectedTile) {
+        // İlk taş seçimi
+        selectedTile = tile;
+        tile.element.classList.add('selected');
+      } else {
+        // İkinci taş seçimi - eşleşme kontrolü
+        moves++;
+        
+        if (selectedTile.word === tile.word) {
+          // Eşleşme başarılı!
+          selectedTile.matched = true;
+          tile.matched = true;
+          selectedTile.element.classList.remove('selected');
+          selectedTile.element.classList.add('matched');
+          tile.element.classList.add('matched');
+          
+          matches++;
+          score += 100;
+          
+          setTimeout(() => {
+            selectedTile.element.style.opacity = '0';
+            tile.element.style.opacity = '0';
+            selectedTile = null;
+            updateTileStates();
+            updateUI();
+            
+            // Oyun bitti mi?
+            if (matches === totalPairs) {
+              endGame(true);
+            }
+          }, 500);
+        } else {
+          // Eşleşme başarısız
+          const wrongTile = tile;
+          wrongTile.element.classList.add('selected');
+          score = Math.max(0, score - 25);
+          
+          setTimeout(() => {
+            selectedTile.element.classList.remove('selected');
+            wrongTile.element.classList.remove('selected');
+            selectedTile = null;
+            updateUI();
+          }, 600);
+        }
+      }
     }
-  }
 
-  function checkWin(){
-    const left = document.querySelectorAll('.tile:not(.matched)').length;
-    if(left===0){ endGame(true); }
-  }
+    // ===== UI Güncelleme =====
+    function updateUI() {
+      scoreEl.textContent = score;
+      matchesEl.textContent = `${matches}/${totalPairs}`;
+      movesEl.textContent = moves;
+    }
 
-  function endGame(win=false){
-    clearInterval(timer);
-    totalAccountScore += Math.max(0, score);
-    localStorage.setItem('accountScore', String(totalAccountScore));
-    refreshStats();
-    saveScore(win);
-    alert(win ? 'Tebrikler! Oyun bitti.' : 'Süre doldu!');
-  }
+    // ===== Zamanlayıcı =====
+    function startTimer() {
+      const timeLimit = parseInt(timeSelect.value);
+      if (timeLimit === 0) {
+        timeLeftEl.textContent = '∞';
+        return;
+      }
 
-  // ====== Leaderboard ======
-  function saveScore(win){
-    const list = JSON.parse(localStorage.getItem('scores')||'[]');
-    list.push({ name: playerName||'Oyuncu', lang: currentLang, pairs, time: timeLeft, moves, score });
-    list.sort((a,b)=> (b.score-a.score) || (b.time-a.time) || (a.moves-b.moves));
-    localStorage.setItem('scores', JSON.stringify(list));
-    renderBoard();
-  }
+      timeRemaining = timeLimit;
+      timeLeftEl.textContent = formatTime(timeRemaining);
 
-  function renderBoard(){
-    const list = JSON.parse(localStorage.getItem('scores')||'[]');
-    const tbody = document.getElementById('bestBody');
-    if(!tbody) return;
-    tbody.innerHTML='';
-    list.slice(0,20).forEach((r,i)=>{
-      const tr = document.createElement('tr');
-      tr.className = 'best-row' + (i===0?' first':'');
-      tr.innerHTML = `<td>${i+1}</td><td>${r.name}</td><td>${r.lang}</td><td>${r.pairs}</td><td>${r.time}</td><td>${r.score}</td>`;
-      tbody.appendChild(tr);
+      clearInterval(timer);
+      timer = setInterval(() => {
+        if (!gameActive) return;
+        
+        timeRemaining--;
+        timeLeftEl.textContent = formatTime(timeRemaining);
+        
+        if (timeRemaining <= 0) {
+          endGame(false);
+        }
+      }, 1000);
+    }
+
+    // ===== Oyun Başlat/Bitir =====
+    function startGame() {
+      setupGame();
+      gameActive = true;
+      startBtn.disabled = true;
+      resetBtn.disabled = false;
+      hintBtn.disabled = false;
+      statusEl.innerHTML = '<span class="info">🎮 Oyun başladı! İyi şanslar!</span>';
+      startTimer();
+    }
+
+    function endGame(won) {
+      gameActive = false;
+      clearInterval(timer);
+      startBtn.disabled = false;
+      resetBtn.disabled = true;
+      hintBtn.disabled = true;
+
+      const playerName = localStorage.getItem(NAME_KEY) || 'Oyuncu';
+      const lang = langSelect.value;
+      const level = levelSelect.value;
+      const timeLimit = parseInt(timeSelect.value);
+
+      if (won) {
+        statusEl.innerHTML = `<span class="success">🎉 Tebrikler! Oyunu kazandınız! Puan: ${score}</span>`;
+        
+        // Skoru kaydet
+        saveScore({
+          name: playerName,
+          score: score,
+          moves: moves,
+          lang: lang,
+          level: level,
+          time: timeLimit === 0 ? 'Sınırsız' : formatTime(timeLimit - timeRemaining),
+          date: new Date().toISOString()
+        });
+      } else {
+        statusEl.innerHTML = `<span class="danger">⏰ Süre doldu! Puan: ${score}</span>`;
+      }
+    }
+
+    // ===== İpucu =====
+    hintBtn.addEventListener('click', () => {
+      if (!gameActive) return;
+
+      const availableTiles = tiles.filter(t => !t.matched && !isTileBlocked(t));
+      const pairs = [];
+
+      for (let i = 0; i < availableTiles.length; i++) {
+        for (let j = i + 1; j < availableTiles.length; j++) {
+          if (availableTiles[i].word === availableTiles[j].word) {
+            pairs.push([availableTiles[i], availableTiles[j]]);
+          }
+        }
+      }
+
+      if (pairs.length > 0) {
+        const [tile1, tile2] = pairs[0];
+        tile1.element.style.borderColor = '#f59e0b';
+        tile2.element.style.borderColor = '#f59e0b';
+        
+        setTimeout(() => {
+          tile1.element.style.borderColor = '';
+          tile2.element.style.borderColor = '';
+        }, 2000);
+        
+        score = Math.max(0, score - 50);
+        updateUI();
+        statusEl.innerHTML = '<span class="info">💡 İpucu gösterildi (-50 puan)</span>';
+      } else {
+        statusEl.innerHTML = '<span class="danger">❌ Uygun eşleşme bulunamadı!</span>';
+      }
     });
-  }
 
-  // ====== UI Hooks ======
-  const startBtn = $('startBtn');
-  if(startBtn){ startBtn.onclick = ()=>{
-      currentLang = $('langSel').value;
-      pairs = Number($('pairsSel').value);
-      startGame();
-    }; }
+    // ===== Skor Yönetimi =====
+    function saveScore(scoreData) {
+      const scores = JSON.parse(localStorage.getItem(SCORES_KEY) || '[]');
+      scores.push(scoreData);
+      scores.sort((a, b) => b.score - a.score);
+      localStorage.setItem(SCORES_KEY, JSON.stringify(scores.slice(0, 20)));
+      renderScores();
+    }
 
-  const hintBtn = $('hintBtn');
-  if(hintBtn){ hintBtn.onclick = useHint; }
+    function renderScores() {
+      const scores = JSON.parse(localStorage.getItem(SCORES_KEY) || '[]');
+      
+      if (scores.length === 0) {
+        scoreListEl.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px;">Henüz skor yok</div>';
+        return;
+      }
 
-  // ====== Init ======
-  askName();
-  const nameBadge = $('nameBadge');
-  if(nameBadge) nameBadge.textContent = playerName || 'Oyuncu';
-  renderBoard();
-  refreshStats();
-</script>
+      const levelNames = {easy: 'Kolay', medium: 'Orta', hard: 'Zor'};
+      const langNames = {en: '🇬🇧', kr: '🇰🇷'};
+
+      scoreListEl.innerHTML = scores.map((s, i) => `
+        <div class="score-item ${i === 0 ? 'top' : ''}">
+          <div class="score-header">
+            <span class="score-name">${i + 1}. ${s.name}</span>
+            <span class="score-points">${s.score}</span>
+          </div>
+          <div class="score-details">
+            <span>${langNames[s.lang]} ${levelNames[s.level]}</span>
+            <span>⏱️ ${s.time}</span>
+            <span>👣 ${s.moves} hamle</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    clearScoresBtn.addEventListener('click', () => {
+      if (confirm('Tüm skorları silmek istediğinizden emin misiniz?')) {
+        localStorage.removeItem(SCORES_KEY);
+        renderScores();
+      }
+    });
+
+    // ===== Buton Event Listeners =====
+    startBtn.addEventListener('click', startGame);
+    resetBtn.addEventListener('click', startGame);
+
+    // ===== İlk Yükleme =====
+    getPlayerName();
+    renderScores();
+    setupGame();
+  </script>
 </body>
 </html>
