@@ -3,432 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>Kelimeli Mahjong - Mobil</title>
+  <title>Kelimeli Mahjong</title>
   <style>
-    * { 
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #fff;
-      overflow: hidden;
-      height: 100vh;
-      touch-action: manipulation;
-    }
-    
-    .game-container {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      max-width: 100%;
-      margin: 0 auto;
-    }
-    
-    /* Header */
-    .header {
-      background: rgba(0, 0, 0, 0.3);
-      padding: 12px 16px;
-      backdrop-filter: blur(10px);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 100;
-    }
-    
-    .stat-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-    
-    .stat-label {
-      font-size: 10px;
-      opacity: 0.8;
-      text-transform: uppercase;
-    }
-    
-    .stat-value {
-      font-size: 18px;
-      font-weight: 700;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .combo-indicator {
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: 700;
-      font-size: 14px;
-      box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
-      animation: comboPopIn 0.3s ease;
-      display: none;
-      pointer-events: none;
-    }
-    
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; overflow: hidden; height: 100vh; touch-action: manipulation; }
+    .game-container { display: flex; flex-direction: column; height: 100vh; max-width: 100%; margin: 0 auto; }
+    .header { background: rgba(0, 0, 0, 0.3); padding: 12px 16px; backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; position: relative; z-index: 100; }
+    .stat-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .stat-label { font-size: 10px; opacity: 0.8; text-transform: uppercase; }
+    .stat-value { font-size: 18px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+    .combo-indicator { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4); animation: comboPopIn 0.3s ease; display: none; pointer-events: none; }
     .combo-indicator.active { display: block; }
-    
-    @keyframes comboPopIn {
-      from { transform: translateX(-50%) scale(0.5); opacity: 0; }
-      to { transform: translateX(-50%) scale(1); opacity: 1; }
-    }
-    
-    /* Game Board Container */
-    .game-board {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      position: relative;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      scroll-behavior: smooth;
-    }
-    
-    /* Scroll kaydırıcısını gizle ama scroll işlevini koru */
-    .game-board::-webkit-scrollbar {
-      height: 4px;
-    }
-    
-    .game-board::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 2px;
-    }
-    
-    .board {
-      position: relative;
-      margin: 0 auto;
-      min-width: min-content;
-    }
-    
-    /* Tile Styles */
-    .tile {
-      position: absolute;
-      background: linear-gradient(145deg, #ffffff, #f0f0f0);
-      border: 3px solid #ddd;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: #2d3748;
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 
-        0 4px 8px rgba(0,0,0,0.1),
-        inset 0 1px 0 rgba(255,255,255,0.8);
-      text-align: center;
-      line-height: 1.1;
-      padding: 6px;
-      word-break: break-word;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      hyphens: auto;
-    }
-    
-    /* Seçilebilir taşlar - Çok belirgin */
-    .tile.playable {
-      border-color: #48bb78;
-      box-shadow: 
-        0 0 0 2px rgba(72, 187, 120, 0.3),
-        0 0 20px rgba(72, 187, 120, 0.6),
-        0 4px 8px rgba(0,0,0,0.1),
-        inset 0 1px 0 rgba(255,255,255,0.8);
-      animation: playablePulse 2s ease-in-out infinite;
-    }
-    
-    @keyframes playablePulse {
-      0%, 100% { 
-        box-shadow: 
-          0 0 0 2px rgba(72, 187, 120, 0.3),
-          0 0 20px rgba(72, 187, 120, 0.6),
-          0 4px 8px rgba(0,0,0,0.1),
-          inset 0 1px 0 rgba(255,255,255,0.8);
-      }
-      50% { 
-        box-shadow: 
-          0 0 0 3px rgba(72, 187, 120, 0.5),
-          0 0 30px rgba(72, 187, 120, 0.9),
-          0 4px 12px rgba(0,0,0,0.15),
-          inset 0 1px 0 rgba(255,255,255,0.8);
-      }
-    }
-    
-    .tile.blocked {
-      opacity: 0.3;
-      filter: grayscale(0.8);
-      cursor: not-allowed;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      animation: none;
-    }
-    
-    .tile.selected {
-      background: linear-gradient(145deg, #bee3f8, #90cdf4);
-      border-color: #3182ce;
-      border-width: 4px;
-      transform: translateY(-8px) scale(1.05);
-      box-shadow: 
-        0 12px 24px rgba(49, 130, 206, 0.5),
-        inset 0 2px 0 rgba(255,255,255,0.9);
-      z-index: 1000 !important;
-    }
-    
-    .tile.matched {
-      animation: matchSuccess 0.6s ease forwards;
-      pointer-events: none;
-    }
-    
-    @keyframes matchSuccess {
-      0% { transform: scale(1); opacity: 1; }
-      50% { 
-        transform: scale(1.2) rotate(5deg);
-        background: linear-gradient(145deg, #c6f6d5, #9ae6b4);
-        border-color: #38a169;
-      }
-      100% { transform: scale(0); opacity: 0; }
-    }
-    
-    .tile.wrong {
-      animation: wrongShake 0.5s ease;
-    }
-    
-    @keyframes wrongShake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-10px); }
-      75% { transform: translateX(10px); }
-    }
-    
-    .tile.hint {
-      animation: hintGlow 1s ease-in-out 3;
-    }
-    
-    @keyframes hintGlow {
-      0%, 100% { 
-        border-color: #f6ad55;
-        box-shadow: 0 0 20px rgba(246, 173, 85, 0.8);
-      }
-      50% { 
-        border-color: #ed8936;
-        box-shadow: 0 0 40px rgba(237, 137, 54, 1);
-      }
-    }
-    
-    /* Controls */
-    .controls {
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(10px);
-      padding: 12px 16px;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 100;
-    }
-    
-    .control-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    
+    @keyframes comboPopIn { from { transform: translateX(-50%) scale(0.5); opacity: 0; } to { transform: translateX(-50%) scale(1); opacity: 1; } }
+    .game-board { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px; position: relative; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+    .game-board::-webkit-scrollbar { height: 4px; }
+    .game-board::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 2px; }
+    .board { position: relative; margin: 0 auto; min-width: min-content; }
+    .tile { position: absolute; background: linear-gradient(145deg, #ffffff, #f0f0f0); border: 3px solid #ddd; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #2d3748; cursor: pointer; user-select: none; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 8px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8); text-align: center; line-height: 1.1; padding: 6px; word-break: break-word; overflow: hidden; text-overflow: ellipsis; hyphens: auto; }
+    .tile.playable { border-color: #48bb78; box-shadow: 0 0 0 2px rgba(72, 187, 120, 0.3), 0 0 20px rgba(72, 187, 120, 0.6), 0 4px 8px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8); animation: playablePulse 2s ease-in-out infinite; }
+    @keyframes playablePulse { 0%, 100% { box-shadow: 0 0 0 2px rgba(72, 187, 120, 0.3), 0 0 20px rgba(72, 187, 120, 0.6), 0 4px 8px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8); } 50% { box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.5), 0 0 30px rgba(72, 187, 120, 0.9), 0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.8); } }
+    .tile.blocked { opacity: 0.3; filter: grayscale(0.8); cursor: not-allowed; box-shadow: 0 2px 4px rgba(0,0,0,0.1); animation: none; }
+    .tile.selected { background: linear-gradient(145deg, #bee3f8, #90cdf4); border-color: #3182ce; border-width: 4px; transform: translateY(-8px) scale(1.05); box-shadow: 0 12px 24px rgba(49, 130, 206, 0.5), inset 0 2px 0 rgba(255,255,255,0.9); z-index: 1000 !important; }
+    .tile.matched { animation: matchSuccess 0.6s ease forwards; pointer-events: none; }
+    @keyframes matchSuccess { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2) rotate(5deg); background: linear-gradient(145deg, #c6f6d5, #9ae6b4); border-color: #38a169; } 100% { transform: scale(0); opacity: 0; } }
+    .tile.wrong { animation: wrongShake 0.5s ease; }
+    @keyframes wrongShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+    .tile.hint { animation: hintGlow 1s ease-in-out 3; }
+    @keyframes hintGlow { 0%, 100% { border-color: #f6ad55; box-shadow: 0 0 20px rgba(246, 173, 85, 0.8); } 50% { border-color: #ed8936; box-shadow: 0 0 40px rgba(237, 137, 54, 1); } }
+    .controls { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); padding: 12px 16px; flex-shrink: 0; position: relative; z-index: 100; }
+    .control-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .control-row:last-child { margin-bottom: 0; }
-    
-    select, button {
-      flex: 1;
-      padding: 12px 8px;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      touch-action: manipulation;
-    }
-    
-    select {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-      text-align: center;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-    
-    button {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: #fff;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
-    
+    select, button { flex: 1; padding: 12px 8px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; touch-action: manipulation; }
+    select { background: rgba(255, 255, 255, 0.2); color: #fff; text-align: center; -webkit-appearance: none; appearance: none; }
+    select:disabled { opacity: 0.5; cursor: not-allowed; }
+    button { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
     button:active { transform: scale(0.96); }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
-    
-    button.hint-btn {
-      background: linear-gradient(135deg, #f6ad55, #ed8936);
-    }
-    
-    button.reset-btn {
-      background: linear-gradient(135deg, #fc8181, #e53e3e);
-    }
-    
-    /* Modal */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      padding: 20px;
-    }
-    
+    button.hint-btn { background: linear-gradient(135deg, #f6ad55, #ed8936); }
+    button.reset-btn { background: linear-gradient(135deg, #fc8181, #e53e3e); }
+    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px; }
     .modal.hidden { display: none; }
-    
-    .modal-content {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      border-radius: 24px;
-      padding: 32px 24px;
-      max-width: 400px;
-      width: 100%;
-      text-align: center;
-      animation: modalSlideIn 0.3s ease;
-    }
-    
-    @keyframes modalSlideIn {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    
-    .modal h2 {
-      font-size: 32px;
-      margin-bottom: 16px;
-    }
-    
-    .modal p {
-      font-size: 16px;
-      margin-bottom: 20px;
-      opacity: 0.9;
-    }
-    
-    .modal input {
-      width: 100%;
-      padding: 16px;
-      border: none;
-      border-radius: 12px;
-      font-size: 18px;
-      text-align: center;
-      font-weight: 600;
-      margin-bottom: 16px;
-      background: rgba(255, 255, 255, 0.9);
-      color: #2d3748;
-    }
-    
-    .modal button {
-      width: 100%;
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid #fff;
-      padding: 16px;
-      font-size: 18px;
-    }
-    
-    /* Notification */
-    .notification {
-      position: fixed;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      background: linear-gradient(135deg, #48bb78, #38a169);
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 14px;
-      box-shadow: 0 8px 24px rgba(72, 187, 120, 0.4);
-      z-index: 9999;
-      opacity: 0;
-      transition: all 0.3s ease;
-      pointer-events: none;
-    }
-    
-    .notification.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
-    
-    /* Loading/Warning */
-    .warning-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10001;
-      padding: 40px;
-      text-align: center;
-    }
-    
-    .warning-screen.hidden { display: none; }
-    
-    .warning-content {
-      max-width: 400px;
-    }
-    
-    .warning-content h2 {
-      font-size: 48px;
-      margin-bottom: 20px;
-    }
-    
-    .warning-content p {
-      font-size: 18px;
-      line-height: 1.6;
-      margin-bottom: 24px;
-    }
-    
-    .warning-content button {
-      padding: 16px 32px;
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid #fff;
-      border-radius: 12px;
-      color: #fff;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-    }
+    .modal-content { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 24px; padding: 32px 24px; max-width: 400px; width: 100%; text-align: center; animation: modalSlideIn 0.3s ease; }
+    @keyframes modalSlideIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .modal h2 { font-size: 32px; margin-bottom: 16px; }
+    .modal p { font-size: 16px; margin-bottom: 20px; opacity: 0.9; }
+    .modal input { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 18px; text-align: center; font-weight: 600; margin-bottom: 16px; background: rgba(255, 255, 255, 0.9); color: #2d3748; }
+    .modal button { width: 100%; background: rgba(255, 255, 255, 0.2); border: 2px solid #fff; padding: 16px; font-size: 18px; }
+    .notification { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-100px); background: linear-gradient(135deg, #48bb78, #38a169); padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 14px; box-shadow: 0 8px 24px rgba(72, 187, 120, 0.4); z-index: 9999; opacity: 0; transition: all 0.3s ease; pointer-events: none; }
+    .notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   </style>
 </head>
 <body>
-  <!-- Ekran Küçük Uyarısı -->
-  <div class="warning-screen hidden" id="warningScreen">
-    <div class="warning-content">
-      <h2>📱</h2>
-      <p>Ekranınız bu zorluk seviyesi için çok küçük. Lütfen daha kolay bir mod seçin veya cihazınızı döndürün.</p>
-      <button id="warningOk">Tamam</button>
-    </div>
-  </div>
-
-  <!-- İsim Modal -->
   <div class="modal hidden" id="nameModal">
     <div class="modal-content">
       <h2>🀄 Hoş Geldin!</h2>
@@ -438,7 +63,6 @@
     </div>
   </div>
 
-  <!-- Kazanma Modal -->
   <div class="modal hidden" id="winModal">
     <div class="modal-content">
       <h2>🎉 Kazandın!</h2>
@@ -447,12 +71,9 @@
     </div>
   </div>
 
-  <!-- Bildirim -->
   <div class="notification" id="notification"></div>
 
-  <!-- Ana Oyun -->
   <div class="game-container">
-    <!-- Header -->
     <div class="header">
       <div class="stat-item">
         <div class="stat-label">Puan</div>
@@ -468,15 +89,12 @@
       </div>
     </div>
 
-    <!-- Combo -->
     <div class="combo-indicator" id="comboIndicator">🔥 Combo x0</div>
 
-    <!-- Board -->
     <div class="game-board" id="gameBoard">
       <div class="board" id="board"></div>
     </div>
 
-    <!-- Controls -->
     <div class="controls">
       <div class="control-row">
         <select id="langSelect">
@@ -488,630 +106,358 @@
           <option value="a1">A1</option>
           <option value="a2">A2</option>
           <option value="b1">B1</option>
-          <option value="b2">B2</option>
-          <option value="c1">C1</option>
-          <option value="c2">C2</option>
         </select>
         <select id="difficultySelect">
           <option value="easy">🟢 Kolay</option>
           <option value="medium">🟡 Orta</option>
           <option value="hard">🔴 Zor</option>
-          <option value="expert">💀 Uzman</option>
         </select>
       </div>
       <div class="control-row">
         <button id="startBtn">▶️ Başlat</button>
-        <button class="hint-btn" id="hintBtn" disabled>💡 İpucu</button>
+        <button class="hint-btn" id="hintBtn" disabled>💡</button>
         <button class="reset-btn" id="resetBtn" disabled>🔄</button>
       </div>
     </div>
   </div>
 
   <script>
-    // ===== KELİME HAVUZU (Kısaltılmış) =====
-    const wordPairs = {
+    // ===== GAME STATE MACHINE =====
+    const STATES = { IDLE: 'idle', PLAYING: 'playing', PAUSED: 'paused', FINISHED: 'finished' };
+    
+    const gameState = {
+      current: STATES.IDLE,
+      lang: 'en',
+      level: 'a1',
+      difficulty: 'easy',
+      score: 0,
+      moves: 0,
+      matches: 0,
+      combo: 0,
+      timeElapsed: 0,
+      freeHints: 2,
+      totalPairs: 0,
+      tiles: [],
+      selectedTile: null,
+      timer: null
+    };
+
+    // ===== WORD PAIRS =====
+    const words = {
       en: {
-        a1: [
-          ['hello', 'merhaba'], ['yes', 'evet'], ['no', 'hayır'], ['water', 'su'], ['dog', 'köpek'],
-          ['cat', 'kedi'], ['house', 'ev'], ['book', 'kitap'], ['sun', 'güneş'], ['day', 'gün'],
-          ['night', 'gece'], ['family', 'aile'], ['car', 'araba'], ['tree', 'ağaç'], ['food', 'yemek'],
-          ['milk', 'süt'], ['tea', 'çay'], ['hot', 'sıcak'], ['cold', 'soğuk'], ['big', 'büyük'],
-          ['small', 'küçük'], ['good', 'iyi'], ['bad', 'kötü'], ['red', 'kırmızı'], ['blue', 'mavi'],
-          ['one', 'bir'], ['two', 'iki'], ['happy', 'mutlu'], ['sad', 'üzgün'], ['eat', 'yemek'],
-          ['walk', 'yürümek'], ['run', 'koşmak'], ['sleep', 'uyumak'], ['hand', 'el'], ['eye', 'göz'],
-          ['new', 'yeni'], ['old', 'eski'], ['left', 'sol'], ['right', 'sağ'], ['up', 'yukarı'],
-          ['down', 'aşağı'], ['stop', 'dur'], ['go', 'git'], ['come', 'gel'], ['here', 'burası'],
-          ['there', 'orası'], ['boy', 'oğlan'], ['girl', 'kız'], ['love', 'aşk']
-        ],
-        a2: [
-          ['school', 'okul'], ['work', 'iş'], ['money', 'para'], ['city', 'şehir'], ['road', 'yol'],
-          ['train', 'tren'], ['plane', 'uçak'], ['rain', 'yağmur'], ['snow', 'kar'], ['wind', 'rüzgar'],
-          ['summer', 'yaz'], ['winter', 'kış'], ['week', 'hafta'], ['month', 'ay'], ['year', 'yıl'],
-          ['time', 'zaman'], ['hour', 'saat'], ['today', 'bugün'], ['music', 'müzik'], ['song', 'şarkı'],
-          ['game', 'oyun'], ['sport', 'spor'], ['price', 'fiyat'], ['cheap', 'ucuz'], ['buy', 'almak'],
-          ['speak', 'konuşmak'], ['listen', 'dinlemek'], ['read', 'okumak'], ['write', 'yazmak'], ['learn', 'öğrenmek'],
-          ['know', 'bilmek'], ['think', 'düşünmek'], ['feel', 'hissetmek'], ['want', 'istemek'], ['need', 'gerekmek'],
-          ['find', 'bulmak'], ['give', 'vermek'], ['take', 'almak'], ['help', 'yardım'], ['ask', 'sormak'],
-          ['tell', 'söylemek'], ['show', 'göstermek'], ['hear', 'duymak'], ['see', 'görmek'], ['look', 'bakmak'],
-          ['watch', 'izlemek'], ['wait', 'beklemek'], ['open', 'açmak'], ['close', 'kapatmak']
-        ],
-        b1: [
-          ['travel', 'seyahat'], ['culture', 'kültür'], ['language', 'dil'], ['government', 'hükümet'], ['law', 'yasa'],
-          ['freedom', 'özgürlük'], ['society', 'toplum'], ['economy', 'ekonomi'], ['business', 'iş'], ['company', 'şirket'],
-          ['career', 'kariyer'], ['education', 'eğitim'], ['science', 'bilim'], ['research', 'araştırma'], ['technology', 'teknoloji'],
-          ['health', 'sağlık'], ['medicine', 'ilaç'], ['doctor', 'doktor'], ['patient', 'hasta'], ['environment', 'çevre'],
-          ['nature', 'doğa'], ['pollution', 'kirlilik'], ['energy', 'enerji'], ['climate', 'iklim'], ['ocean', 'okyanus'],
-          ['forest', 'orman'], ['mountain', 'dağ'], ['river', 'nehir'], ['desert', 'çöl'], ['island', 'ada'],
-          ['opportunity', 'fırsat'], ['challenge', 'zorluk'], ['solution', 'çözüm'], ['decision', 'karar'], ['opinion', 'görüş'],
-          ['success', 'başarı'], ['failure', 'başarısızlık'], ['advantage', 'avantaj'], ['problem', 'sorun'], ['answer', 'cevap'],
-          ['question', 'soru'], ['reason', 'sebep'], ['result', 'sonuç'], ['example', 'örnek'], ['idea', 'fikir'],
-          ['plan', 'plan'], ['goal', 'hedef'], ['change', 'değişim'], ['growth', 'büyüme']
-        ],
-        b2: [
-          ['achievement', 'başarı'], ['ambition', 'hırs'], ['courage', 'cesaret'], ['discipline', 'disiplin'], ['independence', 'bağımsızlık'],
-          ['intelligence', 'zeka'], ['motivation', 'motivasyon'], ['patience', 'sabır'], ['perspective', 'bakış açısı'], ['potential', 'potansiyel'],
-          ['responsibility', 'sorumluluk'], ['strategy', 'strateji'], ['analyze', 'analiz'], ['assess', 'değerlendirme'], ['collaborate', 'işbirliği'],
-          ['demonstrate', 'gösterme'], ['establish', 'kurma'], ['implement', 'uygulama'], ['maintain', 'sürdürme'], ['modify', 'değiştirme'],
-          ['phenomenon', 'olgu'], ['hypothesis', 'hipotez'], ['methodology', 'metodoloji'], ['correlation', 'ilişki'], ['consequence', 'sonuç'],
-          ['criteria', 'kriter'], ['framework', 'çerçeve'], ['insight', 'içgörü'], ['interpretation', 'yorum'], ['mechanism', 'mekanizma'],
-          ['objective', 'amaç'], ['perception', 'algı'], ['proportion', 'oran'], ['relevance', 'ilgililik'], ['scope', 'kapsam'],
-          ['significance', 'önem'], ['structure', 'yapı'], ['sustainable', 'sürdürülebilir'], ['systematic', 'sistematik'], ['complex', 'karmaşık'],
-          ['consistent', 'tutarlı'], ['comprehensive', 'kapsamlı'], ['contemporary', 'çağdaş'], ['crucial', 'kritik'], ['evident', 'açık'],
-          ['fundamental', 'temel'], ['implicit', 'örtük'], ['inevitable', 'kaçınılmaz'], ['integral', 'ayrılmaz']
-        ],
-        c1: [
-          ['coherent', 'tutarlı'], ['discourse', 'söylem'], ['empirical', 'deneysel'], ['endeavor', 'çaba'], ['equitable', 'adil'],
-          ['inherent', 'doğal'], ['intrinsic', 'özgün'], ['marginal', 'marjinal'], ['meticulous', 'titiz'], ['plausible', 'makul'],
-          ['precedent', 'emsal'], ['prerequisite', 'ön koşul'], ['profound', 'derin'], ['ambiguous', 'belirsiz'], ['arbitrary', 'keyfi'],
-          ['conceive', 'tasarlamak'], ['constraint', 'kısıtlama'], ['deduce', 'çıkarmak'], ['deficient', 'eksik'], ['discrete', 'ayrık'],
-          ['disparity', 'eşitsizlik'], ['disposition', 'eğilim'], ['doctrine', 'doktrin'], ['domain', 'alan'], ['elaborate', 'detaylandırmak'],
-          ['feasible', 'uygulanabilir'], ['fluctuate', 'dalgalanmak'], ['formulate', 'formüle etmek'], ['hierarchy', 'hiyerarşi'], ['ideology', 'ideoloji'],
-          ['implicit', 'örtük'], ['indispensable', 'vazgeçilmez'], ['inevitable', 'kaçınılmaz'], ['infrastructure', 'altyapı'], ['inhibit', 'engellemek'],
-          ['innovate', 'yenilik yapmak'], ['integral', 'ayrılmaz'], ['intervene', 'müdahale etmek'], ['underlying', 'altta yatan'], ['undermine', 'baltalamak'],
-          ['unify', 'birleştirmek'], ['utilize', 'kullanmak'], ['verify', 'doğrulamak'], ['viable', 'uygulanabilir'], ['volatile', 'değişken'],
-          ['warrant', 'garanti etmek'], ['whereby', 'vasıtasıyla'], ['invoke', 'başvurmak']
-        ],
-        c2: [
-          ['aberration', 'sapma'], ['abstruse', 'anlaşılmaz'], ['ameliorate', 'iyileştirmek'], ['ancillary', 'yardımcı'], ['antithetical', 'zıt'],
-          ['arcane', 'gizli'], ['assiduous', 'gayretli'], ['auspicious', 'uğurlu'], ['axiom', 'aksiyom'], ['belligerent', 'kavgacı'],
-          ['circumscribe', 'sınırlamak'], ['coalesce', 'birleşmek'], ['cogent', 'ikna edici'], ['commensurate', 'orantılı'], ['compendium', 'özet'],
-          ['concomitant', 'eşlik eden'], ['confound', 'şaşırtmak'], ['congenial', 'uyumlu'], ['conjecture', 'tahmin'], ['contentious', 'tartışmalı'],
-          ['deference', 'saygı'], ['derivative', 'türev'], ['dichotomy', 'ikilem'], ['didactic', 'öğretici'], ['discern', 'ayırt etmak'],
-          ['disparate', 'farklı'], ['disseminate', 'yaymak'], ['efficacious', 'etkili'], ['elucidate', 'aydınlatmak'], ['empiricism', 'deneycilik'],
-          ['endemic', 'endemik'], ['engender', 'doğurmak'], ['ephemeral', 'geçici'], ['epistemology', 'bilgi kuramı'], ['equivocal', 'belirsiz'],
-          ['erudite', 'bilgili'], ['esoteric', 'ezoterik'], ['exacerbate', 'kötüleştirmek'], ['exculpate', 'temize çıkarmak'], ['exigent', 'acil'],
-          ['extrapolate', 'tahmin etmek'], ['fallacious', 'yanıltıcı'], ['fortuitous', 'tesadüfi'], ['gregarious', 'sosyal'], ['hegemony', 'hegemonya'],
-          ['heuristic', 'sezgisel'], ['homogeneous', 'homojen'], ['iconoclast', 'geleneklere aykırı'], ['idiosyncratic', 'kendine özgü']
-        ]
+        a1: [['hello','merhaba'],['yes','evet'],['no','hayır'],['water','su'],['dog','köpek'],['cat','kedi'],['house','ev'],['book','kitap'],['sun','güneş'],['day','gün'],['night','gece'],['family','aile'],['car','araba'],['tree','ağaç'],['food','yemek'],['milk','süt'],['tea','çay'],['hot','sıcak'],['cold','soğuk'],['big','büyük'],['small','küçük'],['good','iyi'],['bad','kötü'],['red','kırmızı'],['blue','mavi']],
+        a2: [['school','okul'],['work','iş'],['money','para'],['city','şehir'],['road','yol'],['train','tren'],['plane','uçak'],['rain','yağmur'],['snow','kar'],['wind','rüzgar'],['summer','yaz'],['winter','kış'],['week','hafta'],['month','ay'],['year','yıl'],['time','zaman'],['hour','saat'],['today','bugün'],['music','müzik'],['song','şarkı'],['game','oyun'],['sport','spor'],['price','fiyat'],['cheap','ucuz'],['buy','almak']],
+        b1: [['travel','seyahat'],['culture','kültür'],['language','dil'],['government','hükümet'],['law','yasa'],['freedom','özgürlük'],['society','toplum'],['economy','ekonomi'],['business','iş'],['company','şirket'],['career','kariyer'],['education','eğitim'],['science','bilim'],['research','araştırma'],['technology','teknoloji'],['health','sağlık'],['medicine','ilaç'],['doctor','doktor'],['patient','hasta'],['environment','çevre'],['nature','doğa'],['pollution','kirlilik'],['energy','enerji'],['climate','iklim'],['ocean','okyanus']]
       },
-      es: { a1: [], a2: [], b1: [], b2: [], c1: [], c2: [] }, // Aynı yapıda
-      kr: { a1: [], a2: [], b1: [], b2: [], c1: [], c2: [] }  // Aynı yapıda
-    };
-
-    // İspanyolca ve Korece için de aynı kelimeleri ekle (kısalık için sadece İngilizce dolu)
-    ['es', 'kr'].forEach(lang => {
-      ['a1', 'a2', 'b1', 'b2', 'c1', 'c2'].forEach(level => {
-        wordPairs[lang][level] = wordPairs.en[level];
-      });
-    });
-
-    // ===== DİNAMİK LAYOUT SİSTEMİ =====
-    const LAYOUTS = {
-      easy: {
-        name: 'Kolay',
-        totalTiles: 24,
-        grid: { cols: 6, rows: 4 },
-        positions: [
-          // Katman 0 - taban
-          {x:1,y:0,z:0},{x:2,y:0,z:0},{x:3,y:0,z:0},{x:4,y:0,z:0},
-          {x:0,y:1,z:0},{x:1,y:1,z:0},{x:2,y:1,z:0},{x:3,y:1,z:0},{x:4,y:1,z:0},{x:5,y:1,z:0},
-          {x:0,y:2,z:0},{x:1,y:2,z:0},{x:2,y:2,z:0},{x:3,y:2,z:0},{x:4,y:2,z:0},{x:5,y:2,z:0},
-          {x:1,y:3,z:0},{x:2,y:3,z:0},{x:3,y:3,z:0},{x:4,y:3,z:0},
-          // Katman 1 - üst
-          {x:2,y:1,z:1},{x:3,y:1,z:1},{x:2,y:2,z:1},{x:3,y:2,z:1}
-        ]
+      es: {
+        a1: [['hola','merhaba'],['sí','evet'],['no','hayır'],['agua','su'],['perro','köpek'],['gato','kedi'],['casa','ev'],['libro','kitap'],['sol','güneş'],['día','gün'],['noche','gece'],['familia','aile'],['coche','araba'],['árbol','ağaç'],['comida','yemek'],['leche','süt'],['té','çay'],['caliente','sıcak'],['frío','soğuk'],['grande','büyük'],['pequeño','küçük'],['bueno','iyi'],['malo','kötü'],['rojo','kırmızı'],['azul','mavi']],
+        a2: [['escuela','okul'],['trabajo','iş'],['dinero','para'],['ciudad','şehir'],['camino','yol'],['tren','tren'],['avión','uçak'],['lluvia','yağmur'],['nieve','kar'],['viento','rüzgar'],['verano','yaz'],['invierno','kış'],['semana','hafta'],['mes','ay'],['año','yıl'],['tiempo','zaman'],['hora','saat'],['hoy','bugün'],['música','müzik'],['canción','şarkı'],['juego','oyun'],['deporte','spor'],['precio','fiyat'],['barato','ucuz'],['comprar','almak']],
+        b1: [['viaje','seyahat'],['cultura','kültür'],['idioma','dil'],['gobierno','hükümet'],['ley','yasa'],['libertad','özgürlük'],['sociedad','toplum'],['economía','ekonomi'],['negocio','iş'],['empresa','şirket'],['carrera','kariyer'],['educación','eğitim'],['ciencia','bilim'],['investigación','araştırma'],['tecnología','teknoloji'],['salud','sağlık'],['medicina','ilaç'],['médico','doktor'],['paciente','hasta'],['ambiente','çevre'],['naturaleza','doğa'],['contaminación','kirlilik'],['energía','enerji'],['clima','iklim'],['océano','okyanus']]
       },
-      medium: {
-        name: 'Orta',
-        totalTiles: 48,
-        grid: { cols: 8, rows: 6 },
-        positions: [
-          // Katman 0
-          {x:1,y:0,z:0},{x:2,y:0,z:0},{x:3,y:0,z:0},{x:4,y:0,z:0},{x:5,y:0,z:0},{x:6,y:0,z:0},
-          {x:0,y:1,z:0},{x:1,y:1,z:0},{x:2,y:1,z:0},{x:3,y:1,z:0},{x:4,y:1,z:0},{x:5,y:1,z:0},{x:6,y:1,z:0},{x:7,y:1,z:0},
-          {x:0,y:2,z:0},{x:1,y:2,z:0},{x:2,y:2,z:0},{x:3,y:2,z:0},{x:4,y:2,z:0},{x:5,y:2,z:0},{x:6,y:2,z:0},{x:7,y:2,z:0},
-          {x:0,y:3,z:0},{x:1,y:3,z:0},{x:2,y:3,z:0},{x:3,y:3,z:0},{x:4,y:3,z:0},{x:5,y:3,z:0},{x:6,y:3,z:0},{x:7,y:3,z:0},
-          {x:0,y:4,z:0},{x:1,y:4,z:0},{x:2,y:4,z:0},{x:3,y:4,z:0},{x:4,y:4,z:0},{x:5,y:4,z:0},{x:6,y:4,z:0},{x:7,y:4,z:0},
-          {x:1,y:5,z:0},{x:2,y:5,z:0},{x:3,y:5,z:0},{x:4,y:5,z:0},{x:5,y:5,z:0},{x:6,y:5,z:0},
-          // Katman 1
-          {x:2,y:2,z:1},{x:3,y:2,z:1},{x:4,y:2,z:1},{x:5,y:2,z:1},
-          {x:2,y:3,z:1},{x:3,y:3,z:1},{x:4,y:3,z:1},{x:5,y:3,z:1}
-        ]
-      },
-      hard: {
-        name: 'Zor',
-        totalTiles: 72,
-        grid: { cols: 9, rows: 8 },
-        positions: [
-          // Daha yoğun ama tek ekrana sığan düzen
-          {x:1,y:0,z:0},{x:2,y:0,z:0},{x:3,y:0,z:0},{x:4,y:0,z:0},{x:5,y:0,z:0},{x:6,y:0,z:0},{x:7,y:0,z:0},
-          {x:0,y:1,z:0},{x:1,y:1,z:0},{x:2,y:1,z:0},{x:3,y:1,z:0},{x:4,y:1,z:0},{x:5,y:1,z:0},{x:6,y:1,z:0},{x:7,y:1,z:0},{x:8,y:1,z:0},
-          {x:0,y:2,z:0},{x:1,y:2,z:0},{x:2,y:2,z:0},{x:3,y:2,z:0},{x:4,y:2,z:0},{x:5,y:2,z:0},{x:6,y:2,z:0},{x:7,y:2,z:0},{x:8,y:2,z:0},
-          {x:0,y:3,z:0},{x:1,y:3,z:0},{x:2,y:3,z:0},{x:3,y:3,z:0},{x:4,y:3,z:0},{x:5,y:3,z:0},{x:6,y:3,z:0},{x:7,y:3,z:0},{x:8,y:3,z:0},
-          {x:0,y:4,z:0},{x:1,y:4,z:0},{x:2,y:4,z:0},{x:3,y:4,z:0},{x:4,y:4,z:0},{x:5,y:4,z:0},{x:6,y:4,z:0},{x:7,y:4,z:0},{x:8,y:4,z:0},
-          {x:0,y:5,z:0},{x:1,y:5,z:0},{x:2,y:5,z:0},{x:3,y:5,z:0},{x:4,y:5,z:0},{x:5,y:5,z:0},{x:6,y:5,z:0},{x:7,y:5,z:0},{x:8,y:5,z:0},
-          {x:0,y:6,z:0},{x:1,y:6,z:0},{x:2,y:6,z:0},{x:3,y:6,z:0},{x:4,y:6,z:0},{x:5,y:6,z:0},{x:6,y:6,z:0},{x:7,y:6,z:0},{x:8,y:6,z:0},
-          {x:1,y:7,z:0},{x:2,y:7,z:0},{x:3,y:7,z:0},{x:4,y:7,z:0},{x:5,y:7,z:0},{x:6,y:7,z:0},{x:7,y:7,z:0},
-          // Katman 1
-          {x:3,y:3,z:1},{x:4,y:3,z:1},{x:5,y:3,z:1},
-          {x:3,y:4,z:1},{x:4,y:4,z:1},{x:5,y:4,z:1}
-        ]
-      },
-      expert: {
-        name: 'Uzman',
-        totalTiles: 96,
-        grid: { cols: 12, rows: 8 },
-        scrollEnabled: true,
-        positions: [
-          // Geniş düzen - yatay scroll ile
-          {x:2,y:0,z:0},{x:3,y:0,z:0},{x:4,y:0,z:0},{x:5,y:0,z:0},{x:6,y:0,z:0},{x:7,y:0,z:0},{x:8,y:0,z:0},{x:9,y:0,z:0},
-          {x:1,y:1,z:0},{x:2,y:1,z:0},{x:3,y:1,z:0},{x:4,y:1,z:0},{x:5,y:1,z:0},{x:6,y:1,z:0},{x:7,y:1,z:0},{x:8,y:1,z:0},{x:9,y:1,z:0},{x:10,y:1,z:0},
-          {x:0,y:2,z:0},{x:1,y:2,z:0},{x:2,y:2,z:0},{x:3,y:2,z:0},{x:4,y:2,z:0},{x:5,y:2,z:0},{x:6,y:2,z:0},{x:7,y:2,z:0},{x:8,y:2,z:0},{x:9,y:2,z:0},{x:10,y:2,z:0},{x:11,y:2,z:0},
-          {x:0,y:3,z:0},{x:1,y:3,z:0},{x:2,y:3,z:0},{x:3,y:3,z:0},{x:4,y:3,z:0},{x:5,y:3,z:0},{x:6,y:3,z:0},{x:7,y:3,z:0},{x:8,y:3,z:0},{x:9,y:3,z:0},{x:10,y:3,z:0},{x:11,y:3,z:0},
-          {x:0,y:4,z:0},{x:1,y:4,z:0},{x:2,y:4,z:0},{x:3,y:4,z:0},{x:4,y:4,z:0},{x:5,y:4,z:0},{x:6,y:4,z:0},{x:7,y:4,z:0},{x:8,y:4,z:0},{x:9,y:4,z:0},{x:10,y:4,z:0},{x:11,y:4,z:0},
-          {x:0,y:5,z:0},{x:1,y:5,z:0},{x:2,y:5,z:0},{x:3,y:5,z:0},{x:4,y:5,z:0},{x:5,y:5,z:0},{x:6,y:5,z:0},{x:7,y:5,z:0},{x:8,y:5,z:0},{x:9,y:5,z:0},{x:10,y:5,z:0},{x:11,y:5,z:0},
-          {x:1,y:6,z:0},{x:2,y:6,z:0},{x:3,y:6,z:0},{x:4,y:6,z:0},{x:5,y:6,z:0},{x:6,y:6,z:0},{x:7,y:6,z:0},{x:8,y:6,z:0},{x:9,y:6,z:0},{x:10,y:6,z:0},
-          {x:2,y:7,z:0},{x:3,y:7,z:0},{x:4,y:7,z:0},{x:5,y:7,z:0},{x:6,y:7,z:0},{x:7,y:7,z:0},{x:8,y:7,z:0},{x:9,y:7,z:0},
-          // Katman 1
-          {x:4,y:3,z:1},{x:5,y:3,z:1},{x:6,y:3,z:1},{x:7,y:3,z:1},
-          {x:4,y:4,z:1},{x:5,y:4,z:1},{x:6,y:4,z:1},{x:7,y:4,z:1}
-        ]
+      kr: {
+        a1: [['안녕','merhaba'],['네','evet'],['아니오','hayır'],['물','su'],['개','köpek'],['고양이','kedi'],['집','ev'],['책','kitap'],['해','güneş'],['낮','gün'],['밤','gece'],['가족','aile'],['차','araba'],['나무','ağaç'],['음식','yemek'],['우유','süt'],['차','çay'],['뜨거운','sıcak'],['차가운','soğuk'],['큰','büyük'],['작은','küçük'],['좋은','iyi'],['나쁜','kötü'],['빨간','kırmızı'],['파란','mavi']],
+        a2: [['학교','okul'],['일','iş'],['돈','para'],['도시','şehir'],['길','yol'],['기차','tren'],['비행기','uçak'],['비','yağmur'],['눈','kar'],['바람','rüzgar'],['여름','yaz'],['겨울','kış'],['주','hafta'],['월','ay'],['년','yıl'],['시간','zaman'],['시','saat'],['오늘','bugün'],['음악','müzik'],['노래','şarkı'],['게임','oyun'],['스포츠','spor'],['가격','fiyat'],['싼','ucuz'],['사다','almak']],
+        b1: [['여행','seyahat'],['문화','kültür'],['언어','dil'],['정부','hükümet'],['법','yasa'],['자유','özgürlük'],['사회','toplum'],['경제','ekonomi'],['사업','iş'],['회사','şirket'],['경력','kariyer'],['교육','eğitim'],['과학','bilim'],['연구','araştırma'],['기술','teknoloji'],['건강','sağlık'],['약','ilaç'],['의사','doktor'],['환자','hasta'],['환경','çevre'],['자연','doğa'],['오염','kirlilik'],['에너지','enerji'],['기후','iklim'],['대양','okyanus']]
       }
     };
 
-    // ===== TİLE BOYUTU HESAPLAMA =====
-    function calculateTileMetrics(difficulty) {
-      const layout = LAYOUTS[difficulty];
-      const viewport = {
-        width: window.innerWidth,
-        height: window.innerHeight
-      };
-      
-      const SAFE_AREA = {
-        top: 120,      // Header
-        bottom: 140,   // Controls
-        horizontal: 32 // Padding
-      };
-      
-      const MIN_TILE = {
-        width: 48,
-        height: 60,
-        fontSize: 11
-      };
-      
-      const availableWidth = viewport.width - SAFE_AREA.horizontal;
-      const availableHeight = viewport.height - SAFE_AREA.top - SAFE_AREA.bottom;
-      
-      // Grid boyutlarına göre hesapla
-      const { cols, rows } = layout.grid;
-      const spacing = 8; // Taşlar arası boşluk
-      
-      let tileWidth = Math.floor((availableWidth - (cols * spacing)) / cols);
-      let tileHeight = Math.floor((availableHeight - (rows * spacing)) / rows);
-      
-      // Aspect ratio kontrolü (yaklaşık 4:5)
-      const idealHeight = tileWidth * 1.25;
-      if (tileHeight > idealHeight) {
-        tileHeight = Math.floor(idealHeight);
-      } else {
-        tileWidth = Math.floor(tileHeight * 0.8);
-      }
-      
-      // Minimum kontrol
-      if (tileWidth < MIN_TILE.width || tileHeight < MIN_TILE.height) {
-        return {
-          valid: false,
-          reason: 'SCREEN_TOO_SMALL',
-          message: `Bu zorluk ${viewport.width}x${viewport.height} ekranda oynanamaz`
-        };
-      }
-      
-      return {
-        valid: true,
-        tileWidth,
-        tileHeight,
-        fontSize: Math.max(MIN_TILE.fontSize, Math.floor(tileWidth * 0.22)),
-        spacing,
-        zOffset: 4
-      };
+    // ===== LAYOUTS =====
+    const layouts = {
+      easy: { tiles:24, grid:{cols:6,rows:4}, pos:[{x:1,y:0,z:0},{x:2,y:0,z:0},{x:3,y:0,z:0},{x:4,y:0,z:0},{x:0,y:1,z:0},{x:1,y:1,z:0},{x:2,y:1,z:0},{x:3,y:1,z:0},{x:4,y:1,z:0},{x:5,y:1,z:0},{x:0,y:2,z:0},{x:1,y:2,z:0},{x:2,y:2,z:0},{x:3,y:2,z:0},{x:4,y:2,z:0},{x:5,y:2,z:0},{x:1,y:3,z:0},{x:2,y:3,z:0},{x:3,y:3,z:0},{x:4,y:3,z:0},{x:2,y:1,z:1},{x:3,y:1,z:1},{x:2,y:2,z:1},{x:3,y:2,z:1}] },
+      medium: { tiles:48, grid:{cols:8,rows:6}, pos:[{x:1,y:0,z:0},{x:2,y:0,z:0},{x:3,y:0,z:0},{x:4,y:0,z:0},{x:5,y:0,z:0},{x:6,y:0,z:0},{x:0,y:1,z:0},{x:1,y:1,z:0},{x:2,y:1,z:0},{x:3,y:1,z:0},{x:4,y:1,z:0},{x:5,y:1,z:0},{x:6,y:1,z:0},{x:7,y:1,z:0},{x:0,y:2,z:0},{x:1,y:2,z:0},{x:2,y:2,z:0},{x:3,y:2,z:0},{x:4,y:2,z:0},{x:5,y:2,z:0},{x:6,y:2,z:0},{x:7,y:2,z:0},{x:0,y:3,z:0},{x:1,y:3,z:0},{x:2,y:3,z:0},{x:3,y:3,z:0},{x:4,y:3,z:0},{x:5,y:3,z:0},{x:6,y:3,z:0},{x:7,y:3,z:0},{x:0,y:4,z:0},{x:1,y:4,z:0},{x:2,y:4,z:0},{x:3,y:4,z:0},{x:4,y:4,z:0},{x:5,y:4,z:0},{x:6,y:4,z:0},{x:7,y:4,z:0},{x:1,y:5,z:0},{x:2,y:5,z:0},{x:3,y:5,z:0},{x:4,y:5,z:0},{x:5,y:5,z:0},{x:6,y:5,z:0},{x:2,y:2,z:1},{x:3,y:2,z:1},{x:4,y:2,z:1},{x:5,y:2,z:1},{x:2,y:3,z:1},{x:3,y:3,z:1},{x:4,y:3,z:1},{x:5,y:3,z:1}] },
+      hard: { tiles:72, grid:{cols:9,rows:8}, pos:[{x:1,y:0,z:0},{x:2,y:0,z:0},{x:3,y:0,z:0},{x:4,y:0,z:0},{x:5,y:0,z:0},{x:6,y:0,z:0},{x:7,y:0,z:0},{x:0,y:1,z:0},{x:1,y:1,z:0},{x:2,y:1,z:0},{x:3,y:1,z:0},{x:4,y:1,z:0},{x:5,y:1,z:0},{x:6,y:1,z:0},{x:7,y:1,z:0},{x:8,y:1,z:0},{x:0,y:2,z:0},{x:1,y:2,z:0},{x:2,y:2,z:0},{x:3,y:2,z:0},{x:4,y:2,z:0},{x:5,y:2,z:0},{x:6,y:2,z:0},{x:7,y:2,z:0},{x:8,y:2,z:0},{x:0,y:3,z:0},{x:1,y:3,z:0},{x:2,y:3,z:0},{x:3,y:3,z:0},{x:4,y:3,z:0},{x:5,y:3,z:0},{x:6,y:3,z:0},{x:7,y:3,z:0},{x:8,y:3,z:0},{x:0,y:4,z:0},{x:1,y:4,z:0},{x:2,y:4,z:0},{x:3,y:4,z:0},{x:4,y:4,z:0},{x:5,y:4,z:0},{x:6,y:4,z:0},{x:7,y:4,z:0},{x:8,y:4,z:0},{x:0,y:5,z:0},{x:1,y:5,z:0},{x:2,y:5,z:0},{x:3,y:5,z:0},{x:4,y:5,z:0},{x:5,y:5,z:0},{x:6,y:5,z:0},{x:7,y:5,z:0},{x:8,y:5,z:0},{x:0,y:6,z:0},{x:1,y:6,z:0},{x:2,y:6,z:0},{x:3,y:6,z:0},{x:4,y:6,z:0},{x:5,y:6,z:0},{x:6,y:6,z:0},{x:7,y:6,z:0},{x:8,y:6,z:0},{x:1,y:7,z:0},{x:2,y:7,z:0},{x:3,y:7,z:0},{x:4,y:7,z:0},{x:5,y:7,z:0},{x:6,y:7,z:0},{x:7,y:7,z:0},{x:3,y:3,z:1},{x:4,y:3,z:1},{x:5,y:3,z:1},{x:3,y:4,z:1},{x:4,y:4,z:1},{x:5,y:4,z:1}] }
+    };
+
+    // ===== DOM =====
+    const $ = id => document.getElementById(id);
+    const board = $('board'), scoreEl = $('score'), timerEl = $('timer'), remainingEl = $('remaining');
+    const comboIndicator = $('comboIndicator'), startBtn = $('startBtn'), hintBtn = $('hintBtn'), resetBtn = $('resetBtn');
+    const langSelect = $('langSelect'), levelSelect = $('levelSelect'), difficultySelect = $('difficultySelect');
+    const nameModal = $('nameModal'), nameInput = $('nameInput'), nameSubmit = $('nameSubmit');
+    const winModal = $('winModal'), winMessage = $('winMessage'), playAgain = $('playAgain');
+    const notification = $('notification');
+
+    // ===== STATE MANAGEMENT =====
+    function transitionTo(state) {
+      console.log(`State: ${gameState.current} -> ${state}`);
+      gameState.current = state;
+      updateUI();
     }
 
-    // ===== OYUN DEĞİŞKENLERİ =====
-    let tiles = [];
-    let selectedTile = null;
-    let score = 0;
-    let moves = 0;
-    let matches = 0;
-    let totalPairs = 0;
-    let combo = 0;
-    let gameActive = false;
-    let timer = null;
-    let timeElapsed = 0;
-    let freeHints = 2;
-    let playerName = '';
-
-    // DOM
-    const board = document.getElementById('board');
-    const gameBoard = document.getElementById('gameBoard');
-    const scoreEl = document.getElementById('score');
-    const timerEl = document.getElementById('timer');
-    const remainingEl = document.getElementById('remaining');
-    const comboIndicator = document.getElementById('comboIndicator');
-    const startBtn = document.getElementById('startBtn');
-    const hintBtn = document.getElementById('hintBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const langSelect = document.getElementById('langSelect');
-    const levelSelect = document.getElementById('levelSelect');
-    const difficultySelect = document.getElementById('difficultySelect');
-    const nameModal = document.getElementById('nameModal');
-    const nameInput = document.getElementById('nameInput');
-    const nameSubmit = document.getElementById('nameSubmit');
-    const winModal = document.getElementById('winModal');
-    const winMessage = document.getElementById('winMessage');
-    const playAgain = document.getElementById('playAgain');
-    const notification = document.getElementById('notification');
-    const warningScreen = document.getElementById('warningScreen');
-    const warningOk = document.getElementById('warningOk');
-
-    // ===== YARDIMCI FONKSİYONLAR =====
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
+    function updateUI() {
+      const s = gameState.current;
+      startBtn.disabled = (s === STATES.PLAYING);
+      resetBtn.disabled = (s === STATES.IDLE);
+      hintBtn.disabled = (s !== STATES.PLAYING);
+      
+      const locked = (s === STATES.PLAYING || s === STATES.PAUSED);
+      langSelect.disabled = locked;
+      levelSelect.disabled = locked;
+      difficultySelect.disabled = locked;
+      
+      startBtn.textContent = s === STATES.PLAYING ? '⏸️ Duraklat' : s === STATES.PAUSED ? '▶️ Devam' : '▶️ Başlat';
+      
+      scoreEl.textContent = gameState.score;
+      timerEl.textContent = formatTime(gameState.timeElapsed);
+      remainingEl.textContent = gameState.totalPairs - gameState.matches;
     }
 
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    function resetGame() {
+      if (gameState.timer) clearInterval(gameState.timer);
+      gameState.score = 0;
+      gameState.moves = 0;
+      gameState.matches = 0;
+      gameState.combo = 0;
+      gameState.timeElapsed = 0;
+      gameState.freeHints = 2;
+      gameState.tiles = [];
+      gameState.selectedTile = null;
+      gameState.timer = null;
+      board.innerHTML = '';
+      comboIndicator.classList.remove('active');
+      updateUI();
     }
 
-    function showNotification(message, duration = 2000) {
-      notification.textContent = message;
-      notification.classList.add('show');
-      setTimeout(() => {
-        notification.classList.remove('show');
-      }, duration);
+    function forceEnd(reason) {
+      if (gameState.timer) clearInterval(gameState.timer);
+      resetGame();
+      transitionTo(STATES.IDLE);
+      if (reason) showNotif(`🔄 ${reason}`, 2000);
     }
 
-    function showWarning(message) {
-      warningScreen.querySelector('p').textContent = message;
-      warningScreen.classList.remove('hidden');
-    }
-
-    warningOk.addEventListener('click', () => {
-      warningScreen.classList.add('hidden');
-      difficultySelect.value = 'easy';
+    // ===== SETTINGS HANDLERS =====
+    langSelect.addEventListener('change', () => {
+      if (gameState.lang === langSelect.value) return;
+      if (gameState.current !== STATES.IDLE) forceEnd('Dil değiştirildi');
+      gameState.lang = langSelect.value;
+      setupBoard();
+      showNotif(`📚 ${{'en':'İngilizce','es':'İspanyolca','kr':'Korece'}[gameState.lang]}`, 1500);
     });
 
-    // ===== İSİM YÖNETİMİ =====
-    function initName() {
-      playerName = localStorage.getItem('mahjong_player_name');
-      if (!playerName) {
-        nameModal.classList.remove('hidden');
-        nameInput.focus();
-      }
-    }
-
-    nameSubmit.addEventListener('click', () => {
-      const name = nameInput.value.trim();
-      if (name) {
-        playerName = name;
-        localStorage.setItem('mahjong_player_name', name);
-        nameModal.classList.add('hidden');
-      }
+    levelSelect.addEventListener('change', () => {
+      if (gameState.level === levelSelect.value) return;
+      if (gameState.current !== STATES.IDLE) forceEnd('Seviye değiştirildi');
+      gameState.level = levelSelect.value;
+      setupBoard();
+      showNotif(`📊 Seviye: ${gameState.level.toUpperCase()}`, 1500);
     });
 
-    nameInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') nameSubmit.click();
+    difficultySelect.addEventListener('change', () => {
+      if (gameState.difficulty === difficultySelect.value) return;
+      if (gameState.current !== STATES.IDLE) forceEnd('Zorluk değiştirildi');
+      gameState.difficulty = difficultySelect.value;
+      setupBoard();
+      showNotif(`🎮 ${{'easy':'Kolay','medium':'Orta','hard':'Zor'}[gameState.difficulty]}`, 1500);
     });
 
-    // ===== TAŞ KONTROL =====
-    function isTileBlocked(tile) {
-      const above = tiles.find(t => 
-        !t.matched && 
-        t.z === tile.z + 1 &&
-        Math.abs(t.x - tile.x) <= 0.5 &&
-        Math.abs(t.y - tile.y) <= 0.5
-      );
-      if (above) return true;
+    // ===== HELPERS =====
+    function shuffle(arr) { for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+    function formatTime(s) { const m=Math.floor(s/60),sec=s%60; return `${m}:${sec.toString().padStart(2,'0')}`; }
+    function showNotif(msg, dur=2000) { notification.textContent=msg; notification.classList.add('show'); setTimeout(()=>notification.classList.remove('show'),dur); }
 
-      const leftBlocked = tiles.some(t => 
-        !t.matched && 
-        t.z === tile.z &&
-        t.x === tile.x - 1 &&
-        t.y === tile.y
-      );
-      const rightBlocked = tiles.some(t => 
-        !t.matched && 
-        t.z === tile.z &&
-        t.x === tile.x + 1 &&
-        t.y === tile.y
-      );
-
-      return leftBlocked && rightBlocked;
+    // ===== TILE LOGIC =====
+    function isBlocked(tile) {
+      const above = gameState.tiles.find(t=>!t.matched&&t.z===tile.z+1&&Math.abs(t.x-tile.x)<=0.5&&Math.abs(t.y-tile.y)<=0.5);
+      if(above) return true;
+      const left = gameState.tiles.some(t=>!t.matched&&t.z===tile.z&&t.x===tile.x-1&&t.y===tile.y);
+      const right = gameState.tiles.some(t=>!t.matched&&t.z===tile.z&&t.x===tile.x+1&&t.y===tile.y);
+      return left&&right;
     }
 
-    function updateTileStates() {
-      tiles.forEach(tile => {
-        if (!tile.matched) {
-          const blocked = isTileBlocked(tile);
-          tile.element.classList.toggle('blocked', blocked);
-          tile.element.classList.toggle('playable', !blocked);
+    function updateTiles() {
+      gameState.tiles.forEach(t=>{
+        if(!t.matched){
+          const blocked=isBlocked(t);
+          t.element.classList.toggle('blocked',blocked);
+          t.element.classList.toggle('playable',!blocked);
         }
       });
     }
 
-    // ===== OYUN KURULUMU =====
-    function setupGame() {
-      const lang = langSelect.value;
-      const level = levelSelect.value;
-      const difficulty = difficultySelect.value;
-      const layout = LAYOUTS[difficulty];
-      
-      // Tile boyutlarını hesapla
-      const metrics = calculateTileMetrics(difficulty);
-      
-      if (!metrics.valid) {
-        showWarning(metrics.message);
-        return false;
-      }
-
-      totalPairs = layout.totalTiles / 2;
-
-      const availablePairs = wordPairs[lang][level];
-      const pairs = shuffle([...availablePairs]).slice(0, totalPairs);
-      const tileWords = [];
-      
-      pairs.forEach(([foreign, turkish]) => {
-        tileWords.push({ word: foreign, pairId: foreign });
-        tileWords.push({ word: turkish, pairId: foreign });
-      });
-      
-      shuffle(tileWords);
-
+    // ===== SETUP BOARD =====
+    function setupBoard() {
       board.innerHTML = '';
-      tiles = [];
-      selectedTile = null;
-      score = 0;
-      moves = 0;
-      matches = 0;
-      combo = 0;
-      freeHints = 2;
-
-      const { tileWidth, tileHeight, fontSize, spacing, zOffset } = metrics;
-
-      layout.positions.forEach((pos, idx) => {
-        const tileData = tileWords[idx];
-        const tile = {
-          x: pos.x,
-          y: pos.y,
-          z: pos.z,
-          word: tileData.word,
-          pairId: tileData.pairId,
-          matched: false,
-          element: null
-        };
-
-        const div = document.createElement('div');
-        div.className = 'tile';
-        div.textContent = tile.word;
-        div.style.width = tileWidth + 'px';
-        div.style.height = tileHeight + 'px';
-        div.style.fontSize = fontSize + 'px';
-        
-        const left = pos.x * (tileWidth + spacing) - pos.z * zOffset;
-        const top = pos.y * (tileHeight + spacing) - pos.z * zOffset;
-        const zIndex = pos.z * 100 + pos.y * 10 + pos.x;
-        
-        div.style.left = left + 'px';
-        div.style.top = top + 'px';
-        div.style.zIndex = zIndex;
-
-        div.addEventListener('click', () => onTileClick(tile));
-        
-        tile.element = div;
-        tiles.push(tile);
+      gameState.tiles = [];
+      
+      const layout = layouts[gameState.difficulty];
+      gameState.totalPairs = layout.tiles/2;
+      
+      const w=window.innerWidth, h=window.innerHeight;
+      const availW=w-32, availH=h-272;
+      const {cols,rows}=layout.grid;
+      let tw=Math.floor(availW/cols), th=Math.floor(availH/rows);
+      if(th>tw*1.25) th=Math.floor(tw*1.25); else tw=Math.floor(th*0.8);
+      if(tw<48||th<60){showNotif('⚠️ Ekran çok küçük, kolay mod dene',3000);return;}
+      
+      const pairs=shuffle([...words[gameState.lang][gameState.level]]).slice(0,gameState.totalPairs);
+      const tileWords=[];
+      pairs.forEach(([f,t])=>{tileWords.push({word:f,pairId:f});tileWords.push({word:t,pairId:f});});
+      shuffle(tileWords);
+      
+      layout.pos.forEach((pos,idx)=>{
+        const data=tileWords[idx];
+        const tile={x:pos.x,y:pos.y,z:pos.z,word:data.word,pairId:data.pairId,matched:false,element:null};
+        const div=document.createElement('div');
+        div.className='tile';
+        div.textContent=tile.word;
+        div.style.width=tw+'px';
+        div.style.height=th+'px';
+        div.style.fontSize=Math.max(11,Math.floor(tw*0.22))+'px';
+        div.style.left=(pos.x*(tw+8)-pos.z*4)+'px';
+        div.style.top=(pos.y*(th+8)-pos.z*4)+'px';
+        div.style.zIndex=pos.z*100+pos.y*10+pos.x;
+        div.addEventListener('click',()=>onTileClick(tile));
+        tile.element=div;
+        gameState.tiles.push(tile);
         board.appendChild(div);
       });
-
-      const maxX = Math.max(...layout.positions.map(p => p.x));
-      const maxY = Math.max(...layout.positions.map(p => p.y));
-      const maxZ = Math.max(...layout.positions.map(p => p.z));
       
-      board.style.width = (maxX * (tileWidth + spacing) + tileWidth + maxZ * zOffset) + 'px';
-      board.style.height = (maxY * (tileHeight + spacing) + tileHeight + maxZ * zOffset) + 'px';
-
-      // Expert modda scroll'u göster
-      if (layout.scrollEnabled) {
-        showNotification('👆 Kaydırarak tüm tahtayı görebilirsiniz', 3000);
-      }
-
-      updateTileStates();
+      const maxX=Math.max(...layout.pos.map(p=>p.x));
+      const maxY=Math.max(...layout.pos.map(p=>p.y));
+      board.style.width=(maxX*(tw+8)+tw)+'px';
+      board.style.height=(maxY*(th+8)+th)+'px';
+      
+      updateTiles();
       updateUI();
-      return true;
     }
 
-    // ===== TAŞ TIKLAMA =====
+    // ===== TILE CLICK =====
     function onTileClick(tile) {
-      if (!gameActive || tile.matched || isTileBlocked(tile)) return;
-
-      if (selectedTile === tile) {
+      if(gameState.current!==STATES.PLAYING||tile.matched||isBlocked(tile)) return;
+      
+      if(gameState.selectedTile===tile){
         tile.element.classList.remove('selected');
-        selectedTile = null;
+        gameState.selectedTile=null;
         return;
       }
-
-      if (!selectedTile) {
-        selectedTile = tile;
+      
+      if(!gameState.selectedTile){
+        gameState.selectedTile=tile;
         tile.element.classList.add('selected');
-      } else {
-        moves++;
-        
-        if (selectedTile.pairId === tile.pairId && selectedTile.word !== tile.word) {
-          selectedTile.matched = true;
-          tile.matched = true;
-          selectedTile.element.classList.remove('selected', 'playable');
-          selectedTile.element.classList.add('matched');
+      }else{
+        gameState.moves++;
+        if(gameState.selectedTile.pairId===tile.pairId&&gameState.selectedTile.word!==tile.word){
+          gameState.selectedTile.matched=true;
+          tile.matched=true;
+          gameState.selectedTile.element.classList.remove('selected','playable');
+          gameState.selectedTile.element.classList.add('matched');
           tile.element.classList.add('matched');
-          
-          matches++;
-          combo++;
-          
-          const comboMultiplier = combo >= 3 ? 1.5 : 1;
-          const points = Math.floor(100 * comboMultiplier);
-          score += points;
-          
-          if (combo >= 3) {
-            comboIndicator.textContent = `🔥 Combo x${combo}`;
+          gameState.matches++;
+          gameState.combo++;
+          const mult=gameState.combo>=3?1.5:1;
+          const pts=Math.floor(100*mult);
+          gameState.score+=pts;
+          if(gameState.combo>=3){
+            comboIndicator.textContent=`🔥 Combo x${gameState.combo}`;
             comboIndicator.classList.add('active');
-            setTimeout(() => comboIndicator.classList.remove('active'), 2000);
+            setTimeout(()=>comboIndicator.classList.remove('active'),2000);
           }
-          
-          showNotification(`+${points} puan!`, 1000);
-          
-          setTimeout(() => {
-            selectedTile.element.style.display = 'none';
-            tile.element.style.display = 'none';
-            selectedTile = null;
-            updateTileStates();
+          showNotif(`+${pts} puan!`,1000);
+          setTimeout(()=>{
+            gameState.selectedTile.element.style.display='none';
+            tile.element.style.display='none';
+            gameState.selectedTile=null;
+            updateTiles();
             updateUI();
-            
-            if (matches === totalPairs) {
-              endGame(true);
-            }
-          }, 600);
-        } else {
-          combo = 0;
-          const wrongTile = tile;
-          wrongTile.element.classList.add('selected', 'wrong');
-          selectedTile.element.classList.add('wrong');
-          score = Math.max(0, score - 10);
-          
-          showNotification('❌ Yanlış!', 800);
-          
-          setTimeout(() => {
-            selectedTile.element.classList.remove('selected', 'wrong');
-            wrongTile.element.classList.remove('selected', 'wrong');
-            selectedTile = null;
+            if(gameState.matches===gameState.totalPairs) endGame(true);
+          },600);
+        }else{
+          gameState.combo=0;
+          tile.element.classList.add('selected','wrong');
+          gameState.selectedTile.element.classList.add('wrong');
+          gameState.score=Math.max(0,gameState.score-10);
+          showNotif('❌ Yanlış!',800);
+          setTimeout(()=>{
+            gameState.selectedTile.element.classList.remove('selected','wrong');
+            tile.element.classList.remove('selected','wrong');
+            gameState.selectedTile=null;
             updateUI();
-          }, 500);
+          },500);
         }
       }
     }
 
-    // ===== İPUCU =====
-    hintBtn.addEventListener('click', () => {
-      if (!gameActive) return;
-
-      const availableTiles = tiles.filter(t => !t.matched && !isTileBlocked(t));
-      const pairs = [];
-
-      for (let i = 0; i < availableTiles.length; i++) {
-        for (let j = i + 1; j < availableTiles.length; j++) {
-          if (availableTiles[i].pairId === availableTiles[j].pairId && 
-              availableTiles[i].word !== availableTiles[j].word) {
-            pairs.push([availableTiles[i], availableTiles[j]]);
-          }
-        }
-      }
-
-      if (pairs.length > 0) {
-        const [tile1, tile2] = pairs[0];
-        tile1.element.classList.add('hint');
-        tile2.element.classList.add('hint');
-        
-        setTimeout(() => {
-          tile1.element.classList.remove('hint');
-          tile2.element.classList.remove('hint');
-        }, 3000);
-        
-        if (freeHints > 0) {
-          freeHints--;
-          showNotification(`💡 Bedava! (${freeHints} kaldı)`, 1500);
-        } else {
-          score = Math.max(0, score - 30);
-          showNotification('💡 İpucu (-30)', 1500);
-        }
-        updateUI();
-      } else {
-        showNotification('❌ Eşleşme yok!', 1500);
+    // ===== GAME CONTROL =====
+    startBtn.addEventListener('click',()=>{
+      if(gameState.current===STATES.IDLE){
+        resetGame();
+        setupBoard();
+        transitionTo(STATES.PLAYING);
+        gameState.timer=setInterval(()=>{if(gameState.current===STATES.PLAYING){gameState.timeElapsed++;updateUI();}},1000);
+        winModal.classList.add('hidden');
+      }else if(gameState.current===STATES.PLAYING){
+        transitionTo(STATES.PAUSED);
+      }else if(gameState.current===STATES.PAUSED){
+        transitionTo(STATES.PLAYING);
       }
     });
 
-    // ===== ZAMAN =====
-    function startTimer() {
-      clearInterval(timer);
-      timeElapsed = 0;
-      timer = setInterval(() => {
-        if (!gameActive) return;
-        timeElapsed++;
-        timerEl.textContent = formatTime(timeElapsed);
-      }, 1000);
-    }
+    resetBtn.addEventListener('click',()=>{
+      if(gameState.current!==STATES.IDLE){
+        forceEnd('Oyun sıfırlandı');
+        setupBoard();
+      }
+    });
 
-    // ===== UI =====
-    function updateUI() {
-      scoreEl.textContent = score;
-      remainingEl.textContent = totalPairs - matches;
-    }
-
-    // ===== OYUN =====
-    function startGame() {
-      if (!setupGame()) return;
-      
-      gameActive = true;
-      startBtn.disabled = true;
-      resetBtn.disabled = false;
-      hintBtn.disabled = false;
-      startTimer();
-      winModal.classList.add('hidden');
-    }
+    hintBtn.addEventListener('click',()=>{
+      if(gameState.current!==STATES.PLAYING) return;
+      const avail=gameState.tiles.filter(t=>!t.matched&&!isBlocked(t));
+      const pairs=[];
+      for(let i=0;i<avail.length;i++){
+        for(let j=i+1;j<avail.length;j++){
+          if(avail[i].pairId===avail[j].pairId&&avail[i].word!==avail[j].word){
+            pairs.push([avail[i],avail[j]]);
+          }
+        }
+      }
+      if(pairs.length>0){
+        const [t1,t2]=pairs[0];
+        t1.element.classList.add('hint');
+        t2.element.classList.add('hint');
+        setTimeout(()=>{t1.element.classList.remove('hint');t2.element.classList.remove('hint');},3000);
+        if(gameState.freeHints>0){
+          gameState.freeHints--;
+          showNotif(`💡 Bedava! (${gameState.freeHints} kaldı)`,1500);
+        }else{
+          gameState.score=Math.max(0,gameState.score-30);
+          showNotif('💡 İpucu (-30)',1500);
+        }
+        updateUI();
+      }else{
+        showNotif('❌ Eşleşme yok!',1500);
+      }
+    });
 
     function endGame(won) {
-      gameActive = false;
-      clearInterval(timer);
-      startBtn.disabled = false;
-      resetBtn.disabled = true;
-      hintBtn.disabled = true;
-
-      if (won) {
-        const timeBonus = Math.max(0, 300 - timeElapsed) * 2;
-        const finalScore = score + timeBonus;
-        
-        winMessage.innerHTML = `
-          <div style="font-size: 18px; margin: 16px 0; line-height: 1.8;">
-            🎉 Puan: <strong>${finalScore}</strong><br>
-            ⏱️ Süre: ${formatTime(timeElapsed)}<br>
-            ⚡ Bonus: +${timeBonus}<br>
-            👣 Hamle: ${moves}
-          </div>
-        `;
-        
+      transitionTo(STATES.FINISHED);
+      if(gameState.timer) clearInterval(gameState.timer);
+      if(won){
+        const bonus=Math.max(0,300-gameState.timeElapsed)*2;
+        const final=gameState.score+bonus;
+        winMessage.innerHTML=`<div style="font-size:18px;margin:16px 0;line-height:1.8">🎉 Puan: <strong>${final}</strong><br>⏱️ ${formatTime(gameState.timeElapsed)}<br>⚡ Bonus: +${bonus}<br>👣 ${gameState.moves} hamle</div>`;
         winModal.classList.remove('hidden');
       }
     }
 
-    // ===== EVENTLER =====
-    startBtn.addEventListener('click', startGame);
-    resetBtn.addEventListener('click', startGame);
-    playAgain.addEventListener('click', startGame);
+    playAgain.addEventListener('click',()=>{
+      resetGame();
+      transitionTo(STATES.IDLE);
+      winModal.classList.add('hidden');
+      setupBoard();
+    });
 
-    // ===== BAŞLANGIÇ =====
-    initName();
-    setupGame();
+    // ===== NAME =====
+    let playerName=localStorage.getItem('mahjong_name');
+    if(!playerName){nameModal.classList.remove('hidden');nameInput.focus();}
+    nameSubmit.addEventListener('click',()=>{
+      const n=nameInput.value.trim();
+      if(n){playerName=n;localStorage.setItem('mahjong_name',n);nameModal.classList.add('hidden');}
+    });
+    nameInput.addEventListener('keypress',e=>{if(e.key==='Enter')nameSubmit.click();});
+
+    // ===== INIT =====
+    setupBoard();
+    transitionTo(STATES.IDLE);
   </script>
 </body>
 </html>
