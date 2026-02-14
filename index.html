@@ -334,9 +334,176 @@
       color: #3b82f6;
       font-size: 1.1em;
     }
+    
+    /* Modal (İsim Giriş Ekranı) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      backdrop-filter: blur(8px);
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal-content {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 2px solid #3b82f6;
+      border-radius: 24px;
+      padding: 40px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      animation: slideUp 0.4s ease;
+    }
+    
+    @keyframes slideUp {
+      from { 
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    .modal-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .modal-title {
+      font-size: 2.5em;
+      margin: 0 0 10px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .modal-subtitle {
+      color: #94a3b8;
+      font-size: 1.1em;
+      margin: 0;
+    }
+    
+    .modal-body {
+      margin-bottom: 30px;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+    }
+    
+    .input-label {
+      display: block;
+      color: #94a3b8;
+      font-size: 0.9em;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .modal-input {
+      width: 100%;
+      background: #0f172a;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+      color: #e5e7eb;
+      font-size: 1.2em;
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    
+    .modal-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+    }
+    
+    .modal-button {
+      width: 100%;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      color: white;
+      font-size: 1.2em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .modal-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    .modal-button:active {
+      transform: translateY(0);
+    }
+    
+    .welcome-icons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 2em;
+      margin-bottom: 20px;
+      animation: bounce 1s ease infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
   </style>
 </head>
 <body>
+  <!-- İsim Giriş Modalı -->
+  <div id="nameModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="welcome-icons">
+          <span>🀄</span>
+          <span>🎮</span>
+          <span>🏆</span>
+        </div>
+        <h2 class="modal-title">Hoş Geldiniz!</h2>
+        <p class="modal-subtitle">Kelimeli Mahjong'a Hoş Geldiniz</p>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label class="input-label" for="nameInput">Oyuncu Adınız</label>
+          <input 
+            type="text" 
+            id="nameInput" 
+            class="modal-input" 
+            placeholder="İsminizi girin..."
+            maxlength="20"
+          />
+        </div>
+      </div>
+      <button class="modal-button" id="nameSubmitBtn">
+        Oyuna Başla 🚀
+      </button>
+    </div>
+  </div>
   <div class="container">
     <h1>🀄 Kelimeli Mahjong</h1>
     
@@ -404,10 +571,12 @@
         
         <div class="help">
           <div class="help-title">📖 Nasıl Oynanır?</div>
-          Sadece <strong>açık</strong> (üzerinde taş olmayan) ve <strong>yan kenarları boş</strong> taşlar seçilebilir. Aynı kelimeleri eşleştirin!
+          Sadece <strong>açık</strong> (üzerinde taş olmayan) ve <strong>yan kenarları boş</strong> taşlar seçilebilir. 
+          <strong>Yabancı kelime ile Türkçe anlamını</strong> eşleştirin! (Örn: apple - elma)
           <div style="margin-top:8px">
             <span class="badge">✓ Doğru: +100</span>
             <span class="badge">✗ Yanlış: -25</span>
+            <span class="badge">💡 İpucu: -50</span>
           </div>
         </div>
       </aside>
@@ -434,33 +603,59 @@
   </div>
 
   <script>
-    // ===== KELİME HAVUZU (100+ kelime) =====
-    const wordPool = {
+    // ===== KELİME HAVUZU (Yabancı-Türkçe Çiftler) =====
+    const wordPairs = {
       en: [
-        'apple', 'book', 'water', 'sun', 'dog', 'house', 'travel', 'friend', 'music', 'money',
-        'city', 'food', 'work', 'school', 'time', 'day', 'night', 'family', 'love', 'game',
-        'learn', 'write', 'read', 'think', 'speak', 'listen', 'walk', 'run', 'jump', 'sleep',
-        'dream', 'hope', 'peace', 'truth', 'light', 'dark', 'fire', 'earth', 'wind', 'rain',
-        'snow', 'cloud', 'star', 'moon', 'tree', 'flower', 'bird', 'fish', 'cat', 'horse',
-        'river', 'ocean', 'mountain', 'forest', 'desert', 'island', 'bridge', 'road', 'car', 'train',
-        'plane', 'ship', 'bike', 'phone', 'computer', 'camera', 'watch', 'key', 'door', 'window',
-        'chair', 'table', 'bed', 'lamp', 'mirror', 'picture', 'pen', 'paper', 'letter', 'story',
-        'song', 'dance', 'paint', 'draw', 'play', 'teach', 'help', 'smile', 'laugh', 'cry',
-        'happy', 'sad', 'angry', 'calm', 'brave', 'strong', 'smart', 'kind', 'good', 'bad',
-        'big', 'small', 'fast', 'slow', 'hot', 'cold', 'new', 'old', 'young', 'free'
+        ['apple', 'elma'], ['book', 'kitap'], ['water', 'su'], ['sun', 'güneş'], ['dog', 'köpek'],
+        ['house', 'ev'], ['travel', 'seyahat'], ['friend', 'arkadaş'], ['music', 'müzik'], ['money', 'para'],
+        ['city', 'şehir'], ['food', 'yemek'], ['work', 'iş'], ['school', 'okul'], ['time', 'zaman'],
+        ['day', 'gün'], ['night', 'gece'], ['family', 'aile'], ['love', 'sevgi'], ['game', 'oyun'],
+        ['learn', 'öğrenmek'], ['write', 'yazmak'], ['read', 'okumak'], ['think', 'düşünmek'], ['speak', 'konuşmak'],
+        ['listen', 'dinlemek'], ['walk', 'yürümek'], ['run', 'koşmak'], ['jump', 'atlamak'], ['sleep', 'uyumak'],
+        ['dream', 'rüya'], ['hope', 'umut'], ['peace', 'barış'], ['truth', 'gerçek'], ['light', 'ışık'],
+        ['dark', 'karanlık'], ['fire', 'ateş'], ['earth', 'toprak'], ['wind', 'rüzgar'], ['rain', 'yağmur'],
+        ['snow', 'kar'], ['cloud', 'bulut'], ['star', 'yıldız'], ['moon', 'ay'], ['tree', 'ağaç'],
+        ['flower', 'çiçek'], ['bird', 'kuş'], ['fish', 'balık'], ['cat', 'kedi'], ['horse', 'at'],
+        ['river', 'nehir'], ['ocean', 'okyanus'], ['mountain', 'dağ'], ['forest', 'orman'], ['desert', 'çöl'],
+        ['island', 'ada'], ['bridge', 'köprü'], ['road', 'yol'], ['car', 'araba'], ['train', 'tren'],
+        ['plane', 'uçak'], ['ship', 'gemi'], ['bike', 'bisiklet'], ['phone', 'telefon'], ['computer', 'bilgisayar'],
+        ['camera', 'kamera'], ['watch', 'saat'], ['key', 'anahtar'], ['door', 'kapı'], ['window', 'pencere'],
+        ['chair', 'sandalye'], ['table', 'masa'], ['bed', 'yatak'], ['lamp', 'lamba'], ['mirror', 'ayna'],
+        ['picture', 'resim'], ['pen', 'kalem'], ['paper', 'kağıt'], ['letter', 'mektup'], ['story', 'hikaye'],
+        ['song', 'şarkı'], ['dance', 'dans'], ['paint', 'boya'], ['draw', 'çizmek'], ['play', 'oynamak'],
+        ['teach', 'öğretmek'], ['help', 'yardım'], ['smile', 'gülümseme'], ['laugh', 'gülmek'], ['cry', 'ağlamak'],
+        ['happy', 'mutlu'], ['sad', 'üzgün'], ['angry', 'kızgın'], ['calm', 'sakin'], ['brave', 'cesur'],
+        ['strong', 'güçlü'], ['smart', 'akıllı'], ['kind', 'nazik'], ['good', 'iyi'], ['bad', 'kötü'],
+        ['big', 'büyük'], ['small', 'küçük'], ['fast', 'hızlı'], ['slow', 'yavaş'], ['hot', 'sıcak'],
+        ['cold', 'soğuk'], ['new', 'yeni'], ['old', 'eski'], ['young', 'genç'], ['free', 'özgür'],
+        ['beautiful', 'güzel'], ['ugly', 'çirkin'], ['clean', 'temiz'], ['dirty', 'kirli'], ['rich', 'zengin'],
+        ['poor', 'fakir'], ['easy', 'kolay'], ['hard', 'zor'], ['simple', 'basit'], ['difficult', 'zor']
       ],
       kr: [
-        '사과', '책', '물', '해', '개', '집', '여행', '친구', '음악', '돈',
-        '도시', '음식', '일', '학교', '시간', '낮', '밤', '가족', '사랑', '게임',
-        '배우다', '쓰다', '읽다', '생각', '말하다', '듣다', '걷다', '달리다', '점프', '자다',
-        '꿈', '희망', '평화', '진실', '빛', '어둠', '불', '땅', '바람', '비',
-        '눈', '구름', '별', '달', '나무', '꽃', '새', '물고기', '고양이', '말',
-        '강', '바다', '산', '숲', '사막', '섬', '다리', '길', '차', '기차',
-        '비행기', '배', '자전거', '전화', '컴퓨터', '카메라', '시계', '열쇠', '문', '창문',
-        '의자', '테이블', '침대', '램프', '거울', '그림', '펜', '종이', '편지', '이야기',
-        '노래', '춤', '그리다', '그리다', '놀다', '가르치다', '돕다', '미소', '웃다', '울다',
-        '행복', '슬픔', '화남', '차분', '용감', '강한', '똑똑', '친절', '좋은', '나쁜',
-        '큰', '작은', '빠른', '느린', '뜨거운', '차가운', '새로운', '오래된', '젊은', '자유'
+        ['사과', 'elma'], ['책', 'kitap'], ['물', 'su'], ['해', 'güneş'], ['개', 'köpek'],
+        ['집', 'ev'], ['여행', 'seyahat'], ['친구', 'arkadaş'], ['음악', 'müzik'], ['돈', 'para'],
+        ['도시', 'şehir'], ['음식', 'yemek'], ['일', 'iş'], ['학교', 'okul'], ['시간', 'zaman'],
+        ['낮', 'gün'], ['밤', 'gece'], ['가족', 'aile'], ['사랑', 'sevgi'], ['게임', 'oyun'],
+        ['배우다', 'öğrenmek'], ['쓰다', 'yazmak'], ['읽다', 'okumak'], ['생각', 'düşünmek'], ['말하다', 'konuşmak'],
+        ['듣다', 'dinlemek'], ['걷다', 'yürümek'], ['달리다', 'koşmak'], ['점프', 'atlamak'], ['자다', 'uyumak'],
+        ['꿈', 'rüya'], ['희망', 'umut'], ['평화', 'barış'], ['진실', 'gerçek'], ['빛', 'ışık'],
+        ['어둠', 'karanlık'], ['불', 'ateş'], ['땅', 'toprak'], ['바람', 'rüzgar'], ['비', 'yağmur'],
+        ['눈', 'kar'], ['구름', 'bulut'], ['별', 'yıldız'], ['달', 'ay'], ['나무', 'ağaç'],
+        ['꽃', 'çiçek'], ['새', 'kuş'], ['물고기', 'balık'], ['고양이', 'kedi'], ['말', 'at'],
+        ['강', 'nehir'], ['바다', 'okyanus'], ['산', 'dağ'], ['숲', 'orman'], ['사막', 'çöl'],
+        ['섬', 'ada'], ['다리', 'köprü'], ['길', 'yol'], ['차', 'araba'], ['기차', 'tren'],
+        ['비행기', 'uçak'], ['배', 'gemi'], ['자전거', 'bisiklet'], ['전화', 'telefon'], ['컴퓨터', 'bilgisayar'],
+        ['카메라', 'kamera'], ['시계', 'saat'], ['열쇠', 'anahtar'], ['문', 'kapı'], ['창문', 'pencere'],
+        ['의자', 'sandalye'], ['테이블', 'masa'], ['침대', 'yatak'], ['램프', 'lamba'], ['거울', 'ayna'],
+        ['그림', 'resim'], ['펜', 'kalem'], ['종이', 'kağıt'], ['편지', 'mektup'], ['이야기', 'hikaye'],
+        ['노래', 'şarkı'], ['춤', 'dans'], ['그리다', 'boyamak'], ['그리다', 'çizmek'], ['놀다', 'oynamak'],
+        ['가르치다', 'öğretmek'], ['돕다', 'yardım'], ['미소', 'gülümseme'], ['웃다', 'gülmek'], ['울다', 'ağlamak'],
+        ['행복', 'mutlu'], ['슬픔', 'üzgün'], ['화남', 'kızgın'], ['차분', 'sakin'], ['용감', 'cesur'],
+        ['강한', 'güçlü'], ['똑똑', 'akıllı'], ['친절', 'nazik'], ['좋은', 'iyi'], ['나쁜', 'kötü'],
+        ['큰', 'büyük'], ['작은', 'küçük'], ['빠른', 'hızlı'], ['느린', 'yavaş'], ['뜨거운', 'sıcak'],
+        ['차가운', 'soğuk'], ['새로운', 'yeni'], ['오래된', 'eski'], ['젊은', 'genç'], ['자유', 'özgür'],
+        ['아름다운', 'güzel'], ['못생긴', 'çirkin'], ['깨끗한', 'temiz'], ['더러운', 'kirli'], ['부유한', 'zengin'],
+        ['가난한', 'fakir'], ['쉬운', 'kolay'], ['어려운', 'zor'], ['간단한', 'basit'], ['복잡한', 'karmaşık']
       ]
     };
 
@@ -575,24 +770,56 @@
       return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
-    // ===== İsim Yönetimi =====
-    function getPlayerName() {
-      let name = localStorage.getItem(NAME_KEY);
-      if (!name) {
-        name = prompt('Oyuncu adınızı girin:', 'Oyuncu') || 'Oyuncu';
-        localStorage.setItem(NAME_KEY, name);
+    // ===== İsim Yönetimi (Modal) =====
+    const nameModal = document.getElementById('nameModal');
+    const nameInput = document.getElementById('nameInput');
+    const nameSubmitBtn = document.getElementById('nameSubmitBtn');
+
+    function showNameModal() {
+      const savedName = localStorage.getItem(NAME_KEY);
+      if (savedName) {
+        nameInput.value = savedName;
       }
-      playerNameLabel.textContent = name;
-      return name;
+      nameModal.style.display = 'flex';
+      nameInput.focus();
     }
 
-    changeNameBtn.addEventListener('click', () => {
-      const name = prompt('Yeni oyuncu adını girin:', localStorage.getItem(NAME_KEY) || 'Oyuncu');
-      if (name) {
-        localStorage.setItem(NAME_KEY, name);
-        playerNameLabel.textContent = name;
+    function hideNameModal() {
+      nameModal.style.display = 'none';
+    }
+
+    function saveName() {
+      let name = nameInput.value.trim();
+      if (!name) {
+        nameInput.style.borderColor = '#ef4444';
+        nameInput.placeholder = 'Lütfen bir isim girin!';
+        setTimeout(() => {
+          nameInput.style.borderColor = '';
+          nameInput.placeholder = 'İsminizi girin...';
+        }, 2000);
+        return;
       }
+      localStorage.setItem(NAME_KEY, name);
+      playerNameLabel.textContent = name;
+      hideNameModal();
+    }
+
+    nameSubmitBtn.addEventListener('click', saveName);
+    nameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') saveName();
     });
+
+    changeNameBtn.addEventListener('click', showNameModal);
+
+    function getPlayerName() {
+      const name = localStorage.getItem(NAME_KEY);
+      if (name) {
+        playerNameLabel.textContent = name;
+        return name;
+      }
+      showNameModal();
+      return 'Oyuncu';
+    }
 
     // ===== Taş Kontrolleri (Mahjong Kuralları) =====
     function isTileBlocked(tile) {
@@ -639,12 +866,16 @@
       const layout = layouts[level];
       totalPairs = layout.length / 2;
 
-      // Kelimeleri seç
-      const words = shuffle([...wordPool[lang]]).slice(0, totalPairs);
+      // Yabancı-Türkçe kelime çiftlerini seç
+      const pairs = shuffle([...wordPairs[lang]]).slice(0, totalPairs);
       const tileWords = [];
-      words.forEach(word => {
-        tileWords.push(word, word); // Her kelimeden 2 tane
+      
+      // Her çiftten yabancı ve Türkçe kelimeyi ekle
+      pairs.forEach(([foreign, turkish]) => {
+        tileWords.push({ word: foreign, pairId: foreign });
+        tileWords.push({ word: turkish, pairId: foreign });
       });
+      
       shuffle(tileWords);
 
       // Tahtayı temizle
@@ -657,11 +888,13 @@
 
       // Taşları oluştur
       layout.forEach((pos, idx) => {
+        const tileData = tileWords[idx];
         const tile = {
           x: pos.x,
           y: pos.y,
           z: pos.z,
-          word: tileWords[idx],
+          word: tileData.word,
+          pairId: tileData.pairId, // Eşleşme için ortak ID
           matched: false,
           element: null
         };
@@ -716,7 +949,8 @@
         // İkinci taş seçimi - eşleşme kontrolü
         moves++;
         
-        if (selectedTile.word === tile.word) {
+        // Yabancı-Türkçe eşleşme: pairId aynı ama word farklı olmalı
+        if (selectedTile.pairId === tile.pairId && selectedTile.word !== tile.word) {
           // Eşleşme başarılı!
           selectedTile.matched = true;
           tile.matched = true;
@@ -836,7 +1070,9 @@
 
       for (let i = 0; i < availableTiles.length; i++) {
         for (let j = i + 1; j < availableTiles.length; j++) {
-          if (availableTiles[i].word === availableTiles[j].word) {
+          // pairId aynı ama word farklı olan taşları bul
+          if (availableTiles[i].pairId === availableTiles[j].pairId && 
+              availableTiles[i].word !== availableTiles[j].word) {
             pairs.push([availableTiles[i], availableTiles[j]]);
           }
         }
